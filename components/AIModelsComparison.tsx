@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell } from 'recharts';
 import { Brain, Zap, DollarSign, TrendingUp, Filter, HardDrive, Cpu } from 'lucide-react';
 import modelsData from '@/data/models.json';
 import { AIModelsData, CustomTooltipProps, sanitizeColor } from '@/types';
+import LiveRegion from './LiveRegion';
 
 const AIModelsComparison = () => {
   const [chartView, setChartView] = useState('performance');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedModels, setSelectedModels] = useState<string[]>(['GPT-4', 'Claude 3.5 Sonnet', 'DeepSeek-R1']);
+  const [announcement, setAnnouncement] = useState('');
 
   const models = modelsData.models;
 
@@ -63,12 +65,28 @@ const AIModelsComparison = () => {
   }));
 
   const toggleModel = (modelName: string) => {
-    setSelectedModels(prev => 
-      prev.includes(modelName) 
+    setSelectedModels(prev => {
+      const isSelected = prev.includes(modelName);
+      const newSelection = isSelected
         ? prev.filter(n => n !== modelName)
-        : [...prev, modelName]
-    );
+        : [...prev, modelName];
+
+      setAnnouncement(
+        isSelected
+          ? `${modelName} deselected. ${newSelection.length} models selected.`
+          : `${modelName} selected. ${newSelection.length} models selected.`
+      );
+
+      return newSelection;
+    });
   };
+
+  useEffect(() => {
+    const displayCount = selectedModels.length > 0
+      ? filteredModels.filter(m => selectedModels.includes(m.name)).length
+      : filteredModels.length;
+    setAnnouncement(`Viewing ${chartView} chart with ${displayCount} models`);
+  }, [chartView]);
 
   const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
@@ -103,6 +121,7 @@ const AIModelsComparison = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white">
+      <LiveRegion message={announcement} />
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -112,7 +131,7 @@ const AIModelsComparison = () => {
         </div>
 
         {/* Category Filter */}
-        <div className="flex justify-center gap-4 mb-8">
+        <div className="flex justify-center gap-4 mb-8" role="group" aria-label="Filter AI models by category">
           <button
             onClick={() => setSelectedCategory('all')}
             className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
@@ -120,8 +139,10 @@ const AIModelsComparison = () => {
                 ? 'bg-blue-600 text-white shadow-lg scale-105'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
+            aria-pressed={selectedCategory === 'all'}
+            aria-label="Show all AI models"
           >
-            <Filter className="w-4 h-4" />
+            <Filter className="w-4 h-4" aria-hidden="true" />
             All Models
           </button>
           <button
@@ -131,6 +152,8 @@ const AIModelsComparison = () => {
                 ? 'bg-purple-600 text-white shadow-lg scale-105'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
+            aria-pressed={selectedCategory === 'Proprietary'}
+            aria-label="Show proprietary AI models only"
           >
             Proprietary
           </button>
@@ -141,13 +164,15 @@ const AIModelsComparison = () => {
                 ? 'bg-green-600 text-white shadow-lg scale-105'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
+            aria-pressed={selectedCategory === 'Open Source'}
+            aria-label="Show open source AI models only"
           >
             Open Source
           </button>
         </div>
 
         {/* Chart View Selector */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
+        <div className="flex flex-wrap justify-center gap-3 mb-8" role="group" aria-label="Select chart visualization type">
           <button
             onClick={() => setChartView('performance')}
             className={`px-5 py-2.5 rounded-lg font-semibold transition-all text-sm ${
@@ -202,8 +227,8 @@ const AIModelsComparison = () => {
 
         {/* Model Selection */}
         <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
-          <h3 className="text-lg font-bold mb-4 text-center">Select Models to Compare</h3>
-          <div className="flex flex-wrap justify-center gap-3">
+          <h3 className="text-lg font-bold mb-4 text-center" id="model-selection-label">Select Models to Compare</h3>
+          <div className="flex flex-wrap justify-center gap-3" role="group" aria-labelledby="model-selection-label">
             {filteredModels.map((model) => (
               <button
                 key={model.name}
@@ -216,6 +241,8 @@ const AIModelsComparison = () => {
                 style={{
                   backgroundColor: selectedModels.includes(model.name) ? sanitizeColor(model.color) : undefined
                 }}
+                aria-pressed={selectedModels.includes(model.name)}
+                aria-label={`${selectedModels.includes(model.name) ? 'Deselect' : 'Select'} ${model.name} for comparison`}
               >
                 {model.name}
               </button>
@@ -232,10 +259,15 @@ const AIModelsComparison = () => {
         </div>
 
         {/* Main Chart */}
-        <div className="bg-slate-800/50 rounded-xl p-8 mb-8 backdrop-blur border border-slate-700">
+        <div className="bg-slate-800/50 rounded-xl p-8 mb-8 backdrop-blur border border-slate-700" role="region" aria-label={`${chartView} chart visualization`}>
           {chartView === 'performance' && (
             <div>
-              <h2 className="text-2xl font-bold mb-6 text-center">Benchmark Performance Comparison</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center" id="performance-chart-title">Benchmark Performance Comparison</h2>
+              <div role="img" aria-labelledby="performance-chart-title" aria-describedby="performance-chart-desc">
+                <span id="performance-chart-desc" className="sr-only">
+                  Bar chart comparing AI models across MMLU Score, HumanEval Score, and Quality Rating.
+                  {displayModels.length} models displayed. Use table below for detailed data.
+                </span>
               <ResponsiveContainer width="100%" height={450}>
                 <BarChart data={performanceData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
@@ -254,6 +286,7 @@ const AIModelsComparison = () => {
                   <Bar dataKey="Quality Rating" fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
               <p className="text-xs text-slate-400 text-center mt-4">
                 MMLU: Massive Multitask Language Understanding | HumanEval: Code generation benchmark
               </p>
@@ -383,11 +416,21 @@ const AIModelsComparison = () => {
         </div>
 
         {/* Model Cards Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8" role="list" aria-label="AI model details cards">
           {filteredModels.map((model) => (
             <div
               key={model.name}
               onClick={() => toggleModel(model.name)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleModel(model.name);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-pressed={selectedModels.includes(model.name)}
+              aria-label={`${model.name} model card. ${selectedModels.includes(model.name) ? 'Selected' : 'Not selected'}. Press to ${selectedModels.includes(model.name) ? 'deselect' : 'select'}.`}
               className={`cursor-pointer transform transition-all duration-300 ${
                 selectedModels.includes(model.name) ? 'scale-105 shadow-2xl' : 'hover:scale-102'
               }`}
