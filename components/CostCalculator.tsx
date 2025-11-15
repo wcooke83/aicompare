@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Calculator, TrendingUp, Zap, DollarSign, Info, Server, Cloud, HelpCircle } from 'lucide-react';
+import { Calculator, TrendingUp, Zap, DollarSign, Info, Server, Cloud, HelpCircle, Globe } from 'lucide-react';
 import modelsData from '@/data/models.json';
 import costData from '@/data/costCalculator.json';
 import { CustomTooltipProps } from '@/types';
 import LiveRegion from './LiveRegion';
+import { formatCurrency, formatSmallCurrency, getCurrency, Currency } from '@/lib/currencyUtils';
 
 interface CostBreakdown {
   model: string;
@@ -21,9 +22,11 @@ const CostCalculator = () => {
   const [requestsPerDay, setRequestsPerDay] = useState(500);
   const [selectedModels, setSelectedModels] = useState<string[]>(['GPT-4', 'Claude 3.5 Sonnet', 'Llama 3.1 70B']);
   const [showSelfHosting, setShowSelfHosting] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [announcement, setAnnouncement] = useState('');
 
   const preset = costData.usagePresets.find(p => p.id === selectedPreset);
+  const currency = getCurrency(selectedCurrency, costData.currencies as Record<string, Currency>);
 
   useEffect(() => {
     if (preset && preset.id !== 'custom') {
@@ -53,7 +56,24 @@ const CostCalculator = () => {
 
   const costs = calculateCosts();
 
-  const calculateSelfHostingCost = (hardware: typeof costData.selfHostingCosts.hardware[0]) => {
+  const calculateSelfHostingCost = (hardware: any) => {
+    // Check if it's a cloud instance
+    const isCloud = hardware.isCloud || false;
+
+    if (isCloud) {
+      // Cloud instances have direct monthly costs
+      const monthlyCost = hardware.monthlyCloudCost || 0;
+      return {
+        name: hardware.name,
+        upfront: 0,
+        monthly: monthlyCost,
+        yearly: Math.round(monthlyCost * 12 * 100) / 100,
+        tokensPerSecond: hardware.tokensPerSecond,
+        isCloud: true
+      };
+    }
+
+    // Traditional hardware calculation
     const monthlyPowerCost = (hardware.monthlyPower * costData.selfHostingCosts.operationalCosts.powerCostPerKwh);
     const monthlyDepreciation = hardware.upfrontCost / (costData.selfHostingCosts.operationalCosts.depreciationYears * 12);
     const totalMonthlyCost = monthlyPowerCost +
@@ -66,7 +86,8 @@ const CostCalculator = () => {
       upfront: hardware.upfrontCost,
       monthly: Math.round(totalMonthlyCost * 100) / 100,
       yearly: Math.round(totalMonthlyCost * 12 * 100) / 100,
-      tokensPerSecond: hardware.tokensPerSecond
+      tokensPerSecond: hardware.tokensPerSecond,
+      isCloud: false
     };
   };
 
@@ -108,7 +129,7 @@ const CostCalculator = () => {
           <p className="font-bold text-white mb-2">{payload[0].payload.name}</p>
           {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: ${typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}
+              {entry.name}: {formatCurrency(typeof entry.value === 'number' ? entry.value : 0, currency)}
             </p>
           ))}
         </div>
@@ -142,34 +163,71 @@ const CostCalculator = () => {
           <p className="text-slate-300 text-lg">Estimate your monthly costs across different AI models</p>
         </div>
 
-        {/* Usage Presets */}
-        <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-400" aria-hidden="true" />
-            Usage Profile
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4" role="group" aria-label="Select usage preset">
-            {costData.usagePresets.map((preset) => (
-              <button
-                key={preset.id}
-                onClick={() => handlePresetChange(preset.id)}
-                className={`p-4 rounded-lg text-left transition-all border-2 ${
-                  selectedPreset === preset.id
-                    ? 'bg-blue-600 border-blue-400 shadow-lg scale-105'
-                    : 'bg-slate-700 border-slate-600 hover:bg-slate-600 hover:border-slate-500'
-                }`}
-                aria-pressed={selectedPreset === preset.id}
-                aria-label={`${preset.name}: ${preset.description}`}
-              >
-                <div className="font-bold mb-1">{preset.name}</div>
-                <div className="text-xs text-slate-300 mb-2">{preset.description}</div>
-                {preset.id !== 'custom' && (
-                  <div className="text-xs text-slate-400">
-                    {(preset.tokensPerDay / 1000).toLocaleString()}K tokens/day
-                  </div>
-                )}
-              </button>
-            ))}
+        {/* Usage Presets & Currency */}
+        <div className="grid lg:grid-cols-4 gap-8 mb-8">
+          {/* Usage Presets */}
+          <div className="lg:col-span-3 bg-slate-800/50 rounded-xl p-6 backdrop-blur border border-slate-700">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-blue-400" aria-hidden="true" />
+              Usage Profile
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4" role="group" aria-label="Select usage preset">
+              {costData.usagePresets.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => handlePresetChange(preset.id)}
+                  className={`p-4 rounded-lg text-left transition-all border-2 ${
+                    selectedPreset === preset.id
+                      ? 'bg-blue-600 border-blue-400 shadow-lg scale-105'
+                      : 'bg-slate-700 border-slate-600 hover:bg-slate-600 hover:border-slate-500'
+                  }`}
+                  aria-pressed={selectedPreset === preset.id}
+                  aria-label={`${preset.name}: ${preset.description}`}
+                >
+                  <div className="font-bold mb-1">{preset.name}</div>
+                  <div className="text-xs text-slate-300 mb-2">{preset.description}</div>
+                  {preset.id !== 'custom' && (
+                    <div className="text-xs text-slate-400">
+                      {(preset.tokensPerDay / 1000).toLocaleString()}K tokens/day
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Currency Selector */}
+          <div className="bg-slate-800/50 rounded-xl p-6 backdrop-blur border border-slate-700">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-green-400" aria-hidden="true" />
+              Currency
+            </h2>
+            <label htmlFor="currency-select" className="block text-sm font-semibold mb-2">
+              Display Currency
+            </label>
+            <select
+              id="currency-select"
+              value={selectedCurrency}
+              onChange={(e) => {
+                setSelectedCurrency(e.target.value);
+                const newCurrency = costData.currencies[e.target.value as keyof typeof costData.currencies];
+                setAnnouncement(`Currency changed to ${newCurrency.name}`);
+              }}
+              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-green-400"
+              aria-label="Select display currency"
+            >
+              {Object.keys(costData.currencies).map((code) => {
+                const curr = costData.currencies[code as keyof typeof costData.currencies];
+                return (
+                  <option key={code} value={code}>
+                    {curr.name} ({curr.symbol})
+                  </option>
+                );
+              })}
+            </select>
+            <p className="text-xs text-slate-400 mt-2">
+              All costs calculated from USD
+            </p>
           </div>
         </div>
 
@@ -272,7 +330,7 @@ const CostCalculator = () => {
                   />
                   <YAxis
                     stroke="#94a3b8"
-                    label={{ value: 'Cost ($)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                    label={{ value: `Cost (${currency.code})`, angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="Monthly Cost" radius={[8, 8, 0, 0]}>
@@ -305,13 +363,13 @@ const CostCalculator = () => {
                       <tr key={cost.model} className={`border-b border-slate-700 ${index % 2 === 0 ? 'bg-slate-700/30' : ''}`}>
                         <td className="py-3 font-medium">{cost.model}</td>
                         <td className="py-3 text-right text-green-400 font-bold">
-                          ${cost.monthlyCost.toLocaleString()}
+                          {formatCurrency(cost.monthlyCost, currency)}
                         </td>
                         <td className="py-3 text-right text-blue-400">
-                          ${cost.yearlyCost.toLocaleString()}
+                          {formatCurrency(cost.yearlyCost, currency)}
                         </td>
                         <td className="py-3 text-right text-slate-300">
-                          ${cost.costPerRequest < 0.01 ? cost.costPerRequest.toExponential(2) : cost.costPerRequest.toFixed(4)}
+                          {formatSmallCurrency(cost.costPerRequest, currency)}
                         </td>
                       </tr>
                     ))}
@@ -357,15 +415,20 @@ const CostCalculator = () => {
                   <tbody>
                     {selfHostingCosts.map((hardware, index) => (
                       <tr key={hardware.name} className={`border-b border-slate-700 ${index % 2 === 0 ? 'bg-slate-700/30' : ''}`}>
-                        <td className="py-3 font-medium">{hardware.name}</td>
+                        <td className="py-3 font-medium">
+                          {hardware.name}
+                          {hardware.isCloud && (
+                            <span className="ml-2 text-xs bg-blue-500/30 text-blue-300 px-2 py-1 rounded">Cloud</span>
+                          )}
+                        </td>
                         <td className="py-3 text-right text-orange-400">
-                          ${hardware.upfront.toLocaleString()}
+                          {hardware.upfront === 0 ? 'N/A' : formatCurrency(hardware.upfront, currency)}
                         </td>
                         <td className="py-3 text-right text-green-400">
-                          ${hardware.monthly.toLocaleString()}
+                          {formatCurrency(hardware.monthly, currency)}
                         </td>
                         <td className="py-3 text-right text-blue-400">
-                          ${hardware.yearly.toLocaleString()}
+                          {formatCurrency(hardware.yearly, currency)}
                         </td>
                         <td className="py-3 text-right text-slate-300">
                           {hardware.tokensPerSecond} tok/s
