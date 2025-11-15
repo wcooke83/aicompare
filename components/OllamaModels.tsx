@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { Filter, HardDrive, Cpu, Zap, Download, Database } from 'lucide-react';
 import ollamaData from '@/data/ollamaModels.json';
+import { OllamaModelsData, CustomTooltipProps, sanitizeColor } from '@/types';
 
 const OllamaModels = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -51,12 +52,12 @@ const OllamaModels = () => {
     );
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-slate-800 border border-slate-600 rounded-lg p-4 shadow-xl">
           <p className="font-bold text-white mb-2">{payload[0].payload.name}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
             </p>
@@ -67,7 +68,7 @@ const OllamaModels = () => {
     return null;
   };
 
-  const CustomScatterTooltip = ({ active, payload }: any) => {
+  const CustomScatterTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -174,7 +175,7 @@ const OllamaModels = () => {
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
                 style={{
-                  backgroundColor: selectedModels.includes(model.name) ? model.color : undefined
+                  backgroundColor: selectedModels.includes(model.name) ? sanitizeColor(model.color) : undefined
                 }}
               >
                 {model.name}
@@ -236,7 +237,7 @@ const OllamaModels = () => {
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="Parameters (B)" radius={[8, 8, 0, 0]}>
                     {parameterData.map((entry, index) => (
-                      <rect key={`cell-${index}`} fill={entry.fill} />
+                      <Cell key={`cell-${index}`} fill={sanitizeColor(entry.fill)} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -271,7 +272,7 @@ const OllamaModels = () => {
                   <Tooltip content={<CustomScatterTooltip />} />
                   <Scatter data={storageSizeData} fill="#8884d8">
                     {storageSizeData.map((entry, index) => (
-                      <circle key={`cell-${index}`} fill={entry.fill} />
+                      <Cell key={`cell-${index}`} fill={sanitizeColor(entry.fill)} />
                     ))}
                   </Scatter>
                 </ScatterChart>
@@ -297,9 +298,9 @@ const OllamaModels = () => {
                 className={`rounded-xl p-6 border-2 ${
                   selectedModels.includes(model.name) ? 'border-white' : 'border-transparent'
                 }`}
-                style={{ 
-                  backgroundColor: `${model.color}20`, 
-                  borderColor: selectedModels.includes(model.name) ? model.color : 'transparent' 
+                style={{
+                  backgroundColor: `${sanitizeColor(model.color)}20`,
+                  borderColor: selectedModels.includes(model.name) ? sanitizeColor(model.color) : 'transparent'
                 }}
               >
                 <div className="flex justify-between items-start mb-4">

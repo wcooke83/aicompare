@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell } from 'recharts';
 import { Info, Zap, Cpu, DollarSign } from 'lucide-react';
 import vsData from '@/data/vsData.json';
+import { HardwareComparisonData, CustomTooltipProps, sanitizeColor } from '@/types';
 
 const HardwareComparison = () => {
   const [chartType, setChartType] = useState('bar');
@@ -35,12 +36,12 @@ const HardwareComparison = () => {
     return allHardware.find(h => h.id === name)?.color || '#94a3b8';
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-lg">
           <p className="font-bold text-white mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {entry.value} {chartType === 'bar' ? 'tok/s' : ''}
             </p>
@@ -73,7 +74,7 @@ const HardwareComparison = () => {
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
                 style={{
-                  backgroundColor: selectedHardware.includes(hardware.id) ? hardware.color : undefined
+                  backgroundColor: selectedHardware.includes(hardware.id) ? sanitizeColor(hardware.color) : undefined
                 }}
               >
                 {hardware.name}
@@ -172,7 +173,7 @@ const HardwareComparison = () => {
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="memory" radius={[0, 8, 8, 0]}>
                         {filteredSpecs.map((entry, index) => (
-                          <rect key={`cell-${index}`} fill={getHardwareColor(entry.name)} />
+                          <Cell key={`cell-${index}`} fill={sanitizeColor(getHardwareColor(entry.name))} />
                         ))}
                       </Bar>
                     </BarChart>

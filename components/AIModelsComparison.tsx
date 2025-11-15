@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell } from 'recharts';
 import { Brain, Zap, DollarSign, TrendingUp, Filter, HardDrive, Cpu } from 'lucide-react';
 import modelsData from '@/data/models.json';
+import { AIModelsData, CustomTooltipProps, sanitizeColor } from '@/types';
 
 const AIModelsComparison = () => {
   const [chartView, setChartView] = useState('performance');
@@ -69,12 +70,12 @@ const AIModelsComparison = () => {
     );
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-slate-800 border border-slate-600 rounded-lg p-4 shadow-xl">
           <p className="font-bold text-white mb-2">{payload[0].payload.name || payload[0].name}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
             </p>
@@ -85,7 +86,7 @@ const AIModelsComparison = () => {
     return null;
   };
 
-  const CustomScatterTooltip = ({ active, payload }: any) => {
+  const CustomScatterTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -213,7 +214,7 @@ const AIModelsComparison = () => {
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
                 style={{
-                  backgroundColor: selectedModels.includes(model.name) ? model.color : undefined
+                  backgroundColor: selectedModels.includes(model.name) ? sanitizeColor(model.color) : undefined
                 }}
               >
                 {model.name}
@@ -313,7 +314,7 @@ const AIModelsComparison = () => {
                   <Tooltip content={<CustomScatterTooltip />} />
                   <Scatter data={costSpeedData} fill="#8884d8">
                     {costSpeedData.map((entry, index) => (
-                      <circle key={`cell-${index}`} fill={entry.fill} />
+                      <Cell key={`cell-${index}`} fill={sanitizeColor(entry.fill)} />
                     ))}
                   </Scatter>
                 </ScatterChart>
@@ -369,7 +370,7 @@ const AIModelsComparison = () => {
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="parameters" radius={[8, 8, 0, 0]}>
                     {parametersData.map((entry, index) => (
-                      <cell key={`cell-${index}`} fill={entry.fill} />
+                      <Cell key={`cell-${index}`} fill={sanitizeColor(entry.fill)} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -395,7 +396,7 @@ const AIModelsComparison = () => {
                 className={`rounded-xl p-6 border-2 ${
                   selectedModels.includes(model.name) ? 'border-white' : 'border-transparent'
                 }`}
-                style={{ backgroundColor: `${model.color}20`, borderColor: selectedModels.includes(model.name) ? model.color : 'transparent' }}
+                style={{ backgroundColor: `${sanitizeColor(model.color)}20`, borderColor: selectedModels.includes(model.name) ? sanitizeColor(model.color) : 'transparent' }}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
