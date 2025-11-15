@@ -11,7 +11,7 @@ export default function Home() {
           Interactive charts and diagrams comparing AI models and hardware
         </p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link href="/mac-vs-rtx" className="group">
             <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-blue-500 cursor-pointer">
               <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors">
@@ -50,6 +50,20 @@ export default function Home() {
               </p>
               <div className="flex items-center text-green-400 font-semibold">
                 View Models →
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/cost-calculator" className="group">
+            <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-yellow-500 cursor-pointer">
+              <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-yellow-400 transition-colors">
+                Cost Calculator
+              </h2>
+              <p className="text-slate-300 mb-4">
+                Estimate monthly costs and compare API vs self-hosting expenses
+              </p>
+              <div className="flex items-center text-yellow-400 font-semibold">
+                Calculate Costs →
               </div>
             </div>
           </Link>

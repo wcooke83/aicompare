@@ -18,7 +18,7 @@ export default function Navigation() {
               className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
               role="listitem"
             >
-              Hardware Comparison
+              Hardware
             </Link>
             <Link
               href="/ai-models"
@@ -32,7 +32,14 @@ export default function Navigation() {
               className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
               role="listitem"
             >
-              Ollama Models
+              Ollama
+            </Link>
+            <Link
+              href="/cost-calculator"
+              className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+              role="listitem"
+            >
+              Cost Calculator
             </Link>
           </div>
         </div>
