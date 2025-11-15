@@ -1,0 +1,244 @@
+{
+  "models": [
+    {
+      "name": "GPT-4",
+      "provider": "OpenAI",
+      "category": "Proprietary",
+      "parameters": 1760,
+      "costPer1M": 30,
+      "speedTokens": 40,
+      "benchmarkMMLU": 86.4,
+      "benchmarkHumanEval": 67,
+      "contextWindow": 128,
+      "quality": 95,
+      "color": "#10b981",
+      "capabilities": {
+        "cleverness": 92,
+        "coding": 85,
+        "reasoning": 94,
+        "creative": 96,
+        "factual": 90,
+        "math": 88
+      },
+      "hardwareRequired": null
+    },
+    {
+      "name": "Claude 3.5 Sonnet",
+      "provider": "Anthropic",
+      "category": "Proprietary",
+      "parameters": 175,
+      "costPer1M": 3,
+      "speedTokens": 85,
+      "benchmarkMMLU": 88.7,
+      "benchmarkHumanEval": 92,
+      "contextWindow": 200,
+      "quality": 97,
+      "color": "#8b5cf6",
+      "capabilities": {
+        "cleverness": 95,
+        "coding": 94,
+        "reasoning": 96,
+        "creative": 94,
+        "factual": 92,
+        "math": 91
+      },
+      "hardwareRequired": null
+    },
+    {
+      "name": "Gemini 1.5 Pro",
+      "provider": "Google",
+      "category": "Proprietary",
+      "parameters": 1000,
+      "costPer1M": 7,
+      "speedTokens": 60,
+      "benchmarkMMLU": 85.9,
+      "benchmarkHumanEval": 71.9,
+      "contextWindow": 2000,
+      "quality": 90,
+      "color": "#3b82f6",
+      "capabilities": {
+        "cleverness": 88,
+        "coding": 82,
+        "reasoning": 89,
+        "creative": 87,
+        "factual": 93,
+        "math": 84
+      },
+      "hardwareRequired": null
+    },
+    {
+      "name": "DeepSeek-R1",
+      "provider": "DeepSeek",
+      "category": "Open Source",
+      "parameters": 671,
+      "costPer1M": 0,
+      "speedTokens": 25,
+      "benchmarkMMLU": 90.8,
+      "benchmarkHumanEval": 97.3,
+      "contextWindow": 128,
+      "quality": 96,
+      "color": "#06b6d4",
+      "capabilities": {
+        "cleverness": 97,
+        "coding": 98,
+        "reasoning": 98,
+        "creative": 86,
+        "factual": 91,
+        "math": 96
+      },
+      "hardwareRequired": {
+        "minVRAM": "80GB",
+        "recommendedGPU": "8x A100 80GB or H100",
+        "minRAM": "256GB",
+        "storageSize": "1.3TB"
+      }
+    },
+    {
+      "name": "Llama 3.1 405B",
+      "provider": "Meta",
+      "category": "Open Source",
+      "parameters": 405,
+      "costPer1M": 0,
+      "speedTokens": 15,
+      "benchmarkMMLU": 85.2,
+      "benchmarkHumanEval": 61.0,
+      "contextWindow": 128,
+      "quality": 88,
+      "color": "#0ea5e9",
+      "capabilities": {
+        "cleverness": 89,
+        "coding": 78,
+        "reasoning": 90,
+        "creative": 88,
+        "factual": 87,
+        "math": 85
+      },
+      "hardwareRequired": {
+        "minVRAM": "48GB",
+        "recommendedGPU": "2x RTX 3090/4090 or A100 80GB",
+        "minRAM": "192GB",
+        "storageSize": "810GB"
+      }
+    },
+    {
+      "name": "Llama 3.1 70B",
+      "provider": "Meta",
+      "category": "Open Source",
+      "parameters": 70,
+      "costPer1M": 0,
+      "speedTokens": 35,
+      "benchmarkMMLU": 79.3,
+      "benchmarkHumanEval": 58.0,
+      "contextWindow": 128,
+      "quality": 82,
+      "color": "#06b6d4",
+      "capabilities": {
+        "cleverness": 83,
+        "coding": 74,
+        "reasoning": 84,
+        "creative": 82,
+        "factual": 81,
+        "math": 79
+      },
+      "hardwareRequired": {
+        "minVRAM": "24GB",
+        "recommendedGPU": "RTX 3090/4090 or A6000",
+        "minRAM": "128GB",
+        "storageSize": "140GB"
+      }
+    },
+    {
+      "name": "Mistral Large 2",
+      "provider": "Mistral",
+      "category": "Proprietary",
+      "parameters": 123,
+      "costPer1M": 8,
+      "speedTokens": 50,
+      "benchmarkMMLU": 84.0,
+      "benchmarkHumanEval": 76.0,
+      "contextWindow": 128,
+      "quality": 86,
+      "color": "#f59e0b",
+      "capabilities": {
+        "cleverness": 87,
+        "coding": 86,
+        "reasoning": 88,
+        "creative": 84,
+        "factual": 85,
+        "math": 83
+      },
+      "hardwareRequired": null
+    },
+    {
+      "name": "Mixtral 8x22B",
+      "provider": "Mistral",
+      "category": "Open Source",
+      "parameters": 141,
+      "costPer1M": 0,
+      "speedTokens": 30,
+      "benchmarkMMLU": 77.8,
+      "benchmarkHumanEval": 50.0,
+      "contextWindow": 64,
+      "quality": 80,
+      "color": "#f97316",
+      "capabilities": {
+        "cleverness": 81,
+        "coding": 68,
+        "reasoning": 82,
+        "creative": 79,
+        "factual": 78,
+        "math": 76
+      },
+      "hardwareRequired": {
+        "minVRAM": "48GB",
+        "recommendedGPU": "2x RTX 3090 or A100",
+        "minRAM": "96GB",
+        "storageSize": "282GB"
+      }
+    },
+    {
+      "name": "GPT-3.5 Turbo",
+      "provider": "OpenAI",
+      "category": "Proprietary",
+      "parameters": 175,
+      "costPer1M": 0.5,
+      "speedTokens": 120,
+      "benchmarkMMLU": 70.0,
+      "benchmarkHumanEval": 48.1,
+      "contextWindow": 16,
+      "quality": 75,
+      "color": "#22c55e",
+      "capabilities": {
+        "cleverness": 76,
+        "coding": 65,
+        "reasoning": 74,
+        "creative": 78,
+        "factual": 72,
+        "math": 68
+      },
+      "hardwareRequired": null
+    },
+    {
+      "name": "Command R+",
+      "provider": "Cohere",
+      "category": "Proprietary",
+      "parameters": 104,
+      "costPer1M": 3,
+      "speedTokens": 55,
+      "benchmarkMMLU": 75.0,
+      "benchmarkHumanEval": 62.0,
+      "contextWindow": 128,
+      "quality": 78,
+      "color": "#ec4899",
+      "capabilities": {
+        "cleverness": 79,
+        "coding": 72,
+        "reasoning": 80,
+        "creative": 77,
+        "factual": 81,
+        "math": 74
+      },
+      "hardwareRequired": null
+    }
+  ]
+}

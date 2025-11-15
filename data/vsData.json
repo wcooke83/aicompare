@@ -1,0 +1,209 @@
+{
+  "allHardware": [
+    { "id": "M3 Max", "name": "M3 Max (128GB)", "color": "#64748b" },
+    { "id": "M2 Ultra", "name": "M2 Ultra (192GB)", "color": "#475569" },
+    { "id": "RTX 3090", "name": "RTX 3090 (24GB)", "color": "#16a34a" },
+    { "id": "RTX 4090", "name": "RTX 4090 (24GB)", "color": "#22c55e" },
+    { "id": "RTX 4090 x2", "name": "2x RTX 4090 (48GB)", "color": "#10b981" },
+    { "id": "A100 40GB", "name": "A100 (40GB)", "color": "#3b82f6" },
+    { "id": "A100 80GB", "name": "A100 (80GB)", "color": "#2563eb" },
+    { "id": "H100", "name": "H100 (80GB)", "color": "#8b5cf6" }
+  ],
+  "performanceData": [
+    {
+      "model": "Llama 8B",
+      "M3 Max": 35,
+      "M2 Ultra": 52,
+      "RTX 3090": 70,
+      "RTX 4090": 95,
+      "RTX 4090 x2": 95,
+      "A100 40GB": 85,
+      "A100 80GB": 85,
+      "H100": 140
+    },
+    {
+      "model": "Mistral 7B",
+      "M3 Max": 40,
+      "M2 Ultra": 57,
+      "RTX 3090": 80,
+      "RTX 4090": 110,
+      "RTX 4090 x2": 110,
+      "A100 40GB": 95,
+      "A100 80GB": 95,
+      "H100": 160
+    },
+    {
+      "model": "DeepSeek-R1 14B",
+      "M3 Max": 18,
+      "M2 Ultra": 28,
+      "RTX 3090": 0,
+      "RTX 4090": 38,
+      "RTX 4090 x2": 38,
+      "A100 40GB": 42,
+      "A100 80GB": 42,
+      "H100": 72
+    },
+    {
+      "model": "CodeLlama 34B",
+      "M3 Max": 15,
+      "M2 Ultra": 24,
+      "RTX 3090": 0,
+      "RTX 4090": 0,
+      "RTX 4090 x2": 32,
+      "A100 40GB": 28,
+      "A100 80GB": 28,
+      "H100": 52
+    },
+    {
+      "model": "DeepSeek-R1 32B",
+      "M3 Max": 13,
+      "M2 Ultra": 20,
+      "RTX 3090": 0,
+      "RTX 4090": 0,
+      "RTX 4090 x2": 28,
+      "A100 40GB": 0,
+      "A100 80GB": 24,
+      "H100": 48
+    },
+    {
+      "model": "Mixtral 8x7B",
+      "M3 Max": 12,
+      "M2 Ultra": 21,
+      "RTX 3090": 0,
+      "RTX 4090": 0,
+      "RTX 4090 x2": 26,
+      "A100 40GB": 22,
+      "A100 80GB": 22,
+      "H100": 45
+    },
+    {
+      "model": "DeepSeek-R1 70B",
+      "M3 Max": 9,
+      "M2 Ultra": 16,
+      "RTX 3090": 0,
+      "RTX 4090": 0,
+      "RTX 4090 x2": 0,
+      "A100 40GB": 0,
+      "A100 80GB": 18,
+      "H100": 38
+    },
+    {
+      "model": "Llama 70B",
+      "M3 Max": 10,
+      "M2 Ultra": 17,
+      "RTX 3090": 0,
+      "RTX 4090": 0,
+      "RTX 4090 x2": 0,
+      "A100 40GB": 0,
+      "A100 80GB": 19,
+      "H100": 40
+    },
+    {
+      "model": "Mixtral 8x22B",
+      "M3 Max": 8,
+      "M2 Ultra": 14,
+      "RTX 3090": 0,
+      "RTX 4090": 0,
+      "RTX 4090 x2": 0,
+      "A100 40GB": 0,
+      "A100 80GB": 15,
+      "H100": 32
+    },
+    {
+      "model": "Llama 405B",
+      "M3 Max": 3,
+      "M2 Ultra": 6,
+      "RTX 3090": 0,
+      "RTX 4090": 0,
+      "RTX 4090 x2": 0,
+      "A100 40GB": 0,
+      "A100 80GB": 0,
+      "H100": 0
+    },
+    {
+      "model": "DeepSeek-R1 671B",
+      "M3 Max": 0,
+      "M2 Ultra": 2,
+      "RTX 3090": 0,
+      "RTX 4090": 0,
+      "RTX 4090 x2": 0,
+      "A100 40GB": 0,
+      "A100 80GB": 0,
+      "H100": 0
+    }
+  ],
+  "specs": [
+    {
+      "name": "M3 Max",
+      "memory": 128,
+      "bandwidth": 400,
+      "power": 60,
+      "price": 4000,
+      "pricePerGB": 31.25,
+      "category": "Unified Memory"
+    },
+    {
+      "name": "M2 Ultra",
+      "memory": 192,
+      "bandwidth": 800,
+      "power": 100,
+      "price": 7000,
+      "pricePerGB": 36.46,
+      "category": "Unified Memory"
+    },
+    {
+      "name": "RTX 3090",
+      "memory": 24,
+      "bandwidth": 936,
+      "power": 350,
+      "price": 650,
+      "pricePerGB": 27.08,
+      "category": "Consumer GPU"
+    },
+    {
+      "name": "RTX 4090",
+      "memory": 24,
+      "bandwidth": 1008,
+      "power": 450,
+      "price": 1600,
+      "pricePerGB": 66.67,
+      "category": "Consumer GPU"
+    },
+    {
+      "name": "RTX 4090 x2",
+      "memory": 48,
+      "bandwidth": 2016,
+      "power": 900,
+      "price": 3200,
+      "pricePerGB": 66.67,
+      "category": "Consumer GPU"
+    },
+    {
+      "name": "A100 40GB",
+      "memory": 40,
+      "bandwidth": 1555,
+      "power": 400,
+      "price": 10000,
+      "pricePerGB": 250,
+      "category": "Data Center GPU"
+    },
+    {
+      "name": "A100 80GB",
+      "memory": 80,
+      "bandwidth": 2039,
+      "power": 400,
+      "price": 15000,
+      "pricePerGB": 187.5,
+      "category": "Data Center GPU"
+    },
+    {
+      "name": "H100",
+      "memory": 80,
+      "bandwidth": 3352,
+      "power": 700,
+      "price": 30000,
+      "pricePerGB": 375,
+      "category": "Data Center GPU"
+    }
+  ]
+}
