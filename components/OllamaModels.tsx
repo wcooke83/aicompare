@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
-import { Filter, HardDrive, Cpu, Zap, Download, Database } from 'lucide-react';
+import { Filter, HardDrive, Cpu, Zap, Download, Database, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import ollamaData from '@/data/ollamaModels.json';
 import { OllamaModelsData, CustomTooltipProps, sanitizeColor } from '@/types';
 
@@ -10,14 +10,49 @@ const OllamaModels = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [chartView, setChartView] = useState('ram');
   const [selectedModels, setSelectedModels] = useState<string[]>(['Llama 3.1 8B', 'Mistral 7B', 'DeepSeek-R1 70B']);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [maxRAM, setMaxRAM] = useState(200);
+  const [maxParameters, setMaxParameters] = useState(1000);
+  const [sortBy, setSortBy] = useState<'name' | 'ram' | 'parameters' | 'storage'>('name');
 
   const models = ollamaData.models;
 
   const categories = ['all', 'General', 'Coding', 'Vision', 'Reasoning', 'Multilingual', 'Uncensored', 'Tools'];
 
-  const filteredModels = selectedCategory === 'all' 
-    ? models 
-    : models.filter(m => m.category === selectedCategory);
+  // Apply all filters
+  let filteredModels = models.filter(m => {
+    // Category filter
+    if (selectedCategory !== 'all' && m.category !== selectedCategory) return false;
+
+    // Search filter
+    if (searchQuery && !m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+
+    // RAM filter
+    if (m.recommendedRAM > maxRAM) return false;
+
+    // Parameters filter
+    if (m.parameters > maxParameters) return false;
+
+    return true;
+  });
+
+  // Apply sorting
+  filteredModels = [...filteredModels].sort((a, b) => {
+    switch (sortBy) {
+      case 'ram':
+        return a.recommendedRAM - b.recommendedRAM;
+      case 'parameters':
+        return a.parameters - b.parameters;
+      case 'storage':
+        const aStorage = parseFloat(a.storageSize.replace('GB', ''));
+        const bStorage = parseFloat(b.storageSize.replace('GB', ''));
+        return aStorage - bStorage;
+      case 'name':
+      default:
+        return a.name.localeCompare(b.name);
+    }
+  });
 
   const displayModels = selectedModels.length > 0 
     ? filteredModels.filter(m => selectedModels.includes(m.name))
@@ -105,6 +140,135 @@ const OllamaModels = () => {
           </h1>
           <p className="text-slate-300 text-lg">Run powerful AI models locally with complete privacy and control</p>
           <p className="text-slate-400 text-sm mt-2">35+ popular models • Open source • No API costs</p>
+        </div>
+
+        {/* Search & Filter Controls */}
+        <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <label htmlFor="ollama-search" className="block text-sm font-semibold mb-2">
+                Search Models
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+                <input
+                  id="ollama-search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by model name..."
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-11 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  aria-label="Search Ollama models by name"
+                />
+              </div>
+            </div>
+
+            {/* Sort */}
+            <div className="md:w-48">
+              <label htmlFor="sort-ollama" className="block text-sm font-semibold mb-2">
+                Sort By
+              </label>
+              <div className="relative">
+                <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+                <select
+                  id="sort-ollama"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-11 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-green-400 appearance-none"
+                  aria-label="Sort Ollama models by"
+                >
+                  <option value="name">Name</option>
+                  <option value="ram">RAM (Low to High)</option>
+                  <option value="parameters">Parameters (Low to High)</option>
+                  <option value="storage">Storage (Low to High)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Advanced Filters Toggle */}
+            <div className="md:w-auto flex items-end">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                  showFilters
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                aria-expanded={showFilters}
+                aria-controls="ollama-advanced-filters"
+                aria-label="Toggle advanced filters"
+              >
+                <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
+                Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div id="ollama-advanced-filters" className="mt-6 pt-6 border-t border-slate-600">
+              <h3 className="text-lg font-bold mb-4">Advanced Filters</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* RAM Filter */}
+                <div>
+                  <label htmlFor="max-ram" className="block text-sm font-semibold mb-2">
+                    Max RAM: {maxRAM === 200 ? 'Any' : `${maxRAM}GB`}
+                  </label>
+                  <input
+                    id="max-ram"
+                    type="range"
+                    value={maxRAM}
+                    onChange={(e) => setMaxRAM(Number(e.target.value))}
+                    min="4"
+                    max="200"
+                    step="4"
+                    className="w-full"
+                    aria-label="Maximum RAM requirement"
+                  />
+                </div>
+
+                {/* Parameters Filter */}
+                <div>
+                  <label htmlFor="max-params" className="block text-sm font-semibold mb-2">
+                    Max Parameters: {maxParameters === 1000 ? 'Any' : `${maxParameters}B`}
+                  </label>
+                  <input
+                    id="max-params"
+                    type="range"
+                    value={maxParameters}
+                    onChange={(e) => setMaxParameters(Number(e.target.value))}
+                    min="1"
+                    max="1000"
+                    step="10"
+                    className="w-full"
+                    aria-label="Maximum model parameters"
+                  />
+                </div>
+              </div>
+
+              {/* Reset Filters */}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    setMaxRAM(200);
+                    setMaxParameters(1000);
+                    setSearchQuery('');
+                    setSortBy('name');
+                  }}
+                  className="px-4 py-2 bg-slate-600 hover:bg-slate-500 rounded-lg text-sm font-semibold transition"
+                  aria-label="Reset all filters"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Results Count */}
+          <div className="mt-4 text-center text-sm text-slate-400">
+            Showing {filteredModels.length} of {models.length} models
+          </div>
         </div>
 
         {/* Category Filter */}

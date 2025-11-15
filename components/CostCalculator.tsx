@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Calculator, TrendingUp, Zap, DollarSign, Info, Server, Cloud, HelpCircle, Globe } from 'lucide-react';
+import { Calculator, TrendingUp, Zap, DollarSign, Info, Server, Cloud, HelpCircle, Globe, Search } from 'lucide-react';
 import modelsData from '@/data/models.json';
 import costData from '@/data/costCalculator.json';
 import { CustomTooltipProps } from '@/types';
@@ -23,6 +23,7 @@ const CostCalculator = () => {
   const [selectedModels, setSelectedModels] = useState<string[]>(['GPT-4', 'Claude 3.5 Sonnet', 'Llama 3.1 70B']);
   const [showSelfHosting, setShowSelfHosting] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [modelSearchQuery, setModelSearchQuery] = useState('');
   const [announcement, setAnnouncement] = useState('');
 
   const preset = costData.usagePresets.find(p => p.id === selectedPreset);
@@ -288,9 +289,28 @@ const CostCalculator = () => {
 
         {/* Model Selection */}
         <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
-          <h2 className="text-xl font-bold mb-4">Select Models to Compare</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <h2 className="text-xl font-bold">Select Models to Compare</h2>
+            <div className="w-full sm:w-64">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
+                <input
+                  id="cost-model-search"
+                  type="text"
+                  value={modelSearchQuery}
+                  onChange={(e) => setModelSearchQuery(e.target.value)}
+                  placeholder="Search models..."
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  aria-label="Search models for cost comparison"
+                />
+              </div>
+            </div>
+          </div>
           <div className="flex flex-wrap gap-3" role="group" aria-label="Select AI models for cost comparison">
-            {modelsData.models.slice(0, 10).map((model) => (
+            {modelsData.models
+              .filter(model => modelSearchQuery === '' || model.name.toLowerCase().includes(modelSearchQuery.toLowerCase()))
+              .slice(0, 15)
+              .map((model) => (
               <button
                 key={model.name}
                 onClick={() => toggleModel(model.name)}

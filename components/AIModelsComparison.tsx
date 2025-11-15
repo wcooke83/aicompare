@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell } from 'recharts';
-import { Brain, Zap, DollarSign, TrendingUp, Filter, HardDrive, Cpu } from 'lucide-react';
+import { Brain, Zap, DollarSign, TrendingUp, Filter, HardDrive, Cpu, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import modelsData from '@/data/models.json';
 import { AIModelsData, CustomTooltipProps, sanitizeColor } from '@/types';
 import LiveRegion from './LiveRegion';
@@ -12,12 +12,49 @@ const AIModelsComparison = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedModels, setSelectedModels] = useState<string[]>(['GPT-4', 'Claude 3.5 Sonnet', 'DeepSeek-R1']);
   const [announcement, setAnnouncement] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+  const [performanceMin, setPerformanceMin] = useState(0);
+  const [contextWindowMin, setContextWindowMin] = useState(0);
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'performance' | 'speed'>('name');
 
   const models = modelsData.models;
 
-  const filteredModels = selectedCategory === 'all' 
-    ? models 
-    : models.filter(m => m.category === selectedCategory);
+  // Apply all filters
+  let filteredModels = models.filter(m => {
+    // Category filter
+    if (selectedCategory !== 'all' && m.category !== selectedCategory) return false;
+
+    // Search filter
+    if (searchQuery && !m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+
+    // Price filter
+    if (m.costPer1M < priceRange[0] || m.costPer1M > priceRange[1]) return false;
+
+    // Performance filter
+    if (m.benchmarkMMLU < performanceMin) return false;
+
+    // Context window filter
+    if (m.contextWindow < contextWindowMin) return false;
+
+    return true;
+  });
+
+  // Apply sorting
+  filteredModels = [...filteredModels].sort((a, b) => {
+    switch (sortBy) {
+      case 'price':
+        return a.costPer1M - b.costPer1M;
+      case 'performance':
+        return b.benchmarkMMLU - a.benchmarkMMLU;
+      case 'speed':
+        return b.speedTokens - a.speedTokens;
+      case 'name':
+      default:
+        return a.name.localeCompare(b.name);
+    }
+  });
 
   // Only show selected models in charts if any are selected
   const displayModels = selectedModels.length > 0 
@@ -128,6 +165,168 @@ const AIModelsComparison = () => {
             AI Models Comparison
           </h1>
           <p className="text-slate-300 text-lg">Compare leading language models across performance, cost, and capabilities</p>
+        </div>
+
+        {/* Search & Filter Controls */}
+        <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <label htmlFor="model-search" className="block text-sm font-semibold mb-2">
+                Search Models
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+                <input
+                  id="model-search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setAnnouncement(`${filteredModels.length} models found`);
+                  }}
+                  placeholder="Search by model name..."
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-11 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  aria-label="Search AI models by name"
+                />
+              </div>
+            </div>
+
+            {/* Sort */}
+            <div className="md:w-48">
+              <label htmlFor="sort-models" className="block text-sm font-semibold mb-2">
+                Sort By
+              </label>
+              <div className="relative">
+                <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+                <select
+                  id="sort-models"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-11 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none"
+                  aria-label="Sort models by"
+                >
+                  <option value="name">Name</option>
+                  <option value="price">Price (Low to High)</option>
+                  <option value="performance">Performance (High to Low)</option>
+                  <option value="speed">Speed (High to Low)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Advanced Filters Toggle */}
+            <div className="md:w-auto flex items-end">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                  showFilters
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                aria-expanded={showFilters}
+                aria-controls="advanced-filters"
+                aria-label="Toggle advanced filters"
+              >
+                <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
+                Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div id="advanced-filters" className="mt-6 pt-6 border-t border-slate-600">
+              <h3 className="text-lg font-bold mb-4">Advanced Filters</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                {/* Price Range */}
+                <div>
+                  <label htmlFor="price-min" className="block text-sm font-semibold mb-2">
+                    Price Range ($/1M tokens)
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      id="price-min"
+                      type="number"
+                      value={priceRange[0]}
+                      onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                      min="0"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      aria-label="Minimum price"
+                    />
+                    <span className="text-slate-400">to</span>
+                    <input
+                      id="price-max"
+                      type="number"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                      min="0"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      aria-label="Maximum price"
+                    />
+                  </div>
+                </div>
+
+                {/* Performance Filter */}
+                <div>
+                  <label htmlFor="performance-min" className="block text-sm font-semibold mb-2">
+                    Min MMLU Score: {performanceMin}
+                  </label>
+                  <input
+                    id="performance-min"
+                    type="range"
+                    value={performanceMin}
+                    onChange={(e) => setPerformanceMin(Number(e.target.value))}
+                    min="0"
+                    max="100"
+                    step="5"
+                    className="w-full"
+                    aria-label="Minimum MMLU performance score"
+                  />
+                </div>
+
+                {/* Context Window Filter */}
+                <div>
+                  <label htmlFor="context-min" className="block text-sm font-semibold mb-2">
+                    Min Context: {contextWindowMin.toLocaleString()}K
+                  </label>
+                  <input
+                    id="context-min"
+                    type="range"
+                    value={contextWindowMin}
+                    onChange={(e) => setContextWindowMin(Number(e.target.value))}
+                    min="0"
+                    max="200"
+                    step="10"
+                    className="w-full"
+                    aria-label="Minimum context window size"
+                  />
+                </div>
+              </div>
+
+              {/* Reset Filters */}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    setPriceRange([0, 100]);
+                    setPerformanceMin(0);
+                    setContextWindowMin(0);
+                    setSearchQuery('');
+                    setSortBy('name');
+                    setAnnouncement('All filters reset');
+                  }}
+                  className="px-4 py-2 bg-slate-600 hover:bg-slate-500 rounded-lg text-sm font-semibold transition"
+                  aria-label="Reset all filters"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Results Count */}
+          <div className="mt-4 text-center text-sm text-slate-400">
+            Showing {filteredModels.length} of {models.length} models
+          </div>
         </div>
 
         {/* Category Filter */}
