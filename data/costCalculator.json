@@ -1,0 +1,278 @@
+{
+  "currencies": {
+    "USD": {
+      "symbol": "$",
+      "name": "US Dollar",
+      "code": "USD",
+      "rate": 1.0,
+      "position": "before",
+      "decimalPlaces": 2
+    },
+    "EUR": {
+      "symbol": "€",
+      "name": "Euro",
+      "code": "EUR",
+      "rate": 0.92,
+      "position": "before",
+      "decimalPlaces": 2
+    },
+    "GBP": {
+      "symbol": "£",
+      "name": "British Pound",
+      "code": "GBP",
+      "rate": 0.79,
+      "position": "before",
+      "decimalPlaces": 2
+    },
+    "JPY": {
+      "symbol": "¥",
+      "name": "Japanese Yen",
+      "code": "JPY",
+      "rate": 149.50,
+      "position": "before",
+      "decimalPlaces": 0
+    },
+    "CAD": {
+      "symbol": "C$",
+      "name": "Canadian Dollar",
+      "code": "CAD",
+      "rate": 1.36,
+      "position": "before",
+      "decimalPlaces": 2
+    },
+    "AUD": {
+      "symbol": "A$",
+      "name": "Australian Dollar",
+      "code": "AUD",
+      "rate": 1.53,
+      "position": "before",
+      "decimalPlaces": 2
+    },
+    "CHF": {
+      "symbol": "CHF",
+      "name": "Swiss Franc",
+      "code": "CHF",
+      "rate": 0.88,
+      "position": "before",
+      "decimalPlaces": 2
+    },
+    "CNY": {
+      "symbol": "¥",
+      "name": "Chinese Yuan",
+      "code": "CNY",
+      "rate": 7.24,
+      "position": "before",
+      "decimalPlaces": 2
+    },
+    "INR": {
+      "symbol": "₹",
+      "name": "Indian Rupee",
+      "code": "INR",
+      "rate": 83.12,
+      "position": "before",
+      "decimalPlaces": 2
+    },
+    "BRL": {
+      "symbol": "R$",
+      "name": "Brazilian Real",
+      "code": "BRL",
+      "rate": 4.97,
+      "position": "before",
+      "decimalPlaces": 2
+    }
+  },
+  "usagePresets": [
+    {
+      "id": "hobby",
+      "name": "Hobby / Personal",
+      "description": "Light usage for personal projects",
+      "tokensPerDay": 50000,
+      "requestsPerDay": 50,
+      "icon": "user"
+    },
+    {
+      "id": "startup",
+      "name": "Startup / Small Business",
+      "description": "Growing business with moderate usage",
+      "tokensPerDay": 500000,
+      "requestsPerDay": 500,
+      "icon": "trending-up"
+    },
+    {
+      "id": "enterprise",
+      "name": "Enterprise",
+      "description": "High-volume production workloads",
+      "tokensPerDay": 5000000,
+      "requestsPerDay": 5000,
+      "icon": "building"
+    },
+    {
+      "id": "custom",
+      "name": "Custom",
+      "description": "Enter your own usage estimates",
+      "tokensPerDay": 0,
+      "requestsPerDay": 0,
+      "icon": "settings"
+    }
+  ],
+  "costComponents": {
+    "inputTokenMultiplier": 1,
+    "outputTokenMultiplier": 1,
+    "averageInputOutputRatio": 0.3,
+    "notes": "Input tokens are typically 30% of total, output 70%"
+  },
+  "selfHostingCosts": {
+    "hardware": [
+      {
+        "name": "RTX 4090 (24GB)",
+        "upfrontCost": 1600,
+        "monthlyPower": 45,
+        "maxModelSize": "14B",
+        "tokensPerSecond": 95,
+        "suitable": ["Llama 3.1 8B", "Mistral 7B", "DeepSeek-R1 14B"]
+      },
+      {
+        "name": "2x RTX 4090 (48GB)",
+        "upfrontCost": 3200,
+        "monthlyPower": 90,
+        "maxModelSize": "34B",
+        "tokensPerSecond": 32,
+        "suitable": ["CodeLlama 34B", "DeepSeek-R1 32B", "Mixtral 8x7B"]
+      },
+      {
+        "name": "M3 Max (128GB)",
+        "upfrontCost": 4000,
+        "monthlyPower": 12,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 35,
+        "suitable": ["Llama 3.1 70B", "DeepSeek-R1 70B", "Mixtral 8x22B"]
+      },
+      {
+        "name": "M2 Ultra (192GB)",
+        "upfrontCost": 7000,
+        "monthlyPower": 15,
+        "maxModelSize": "671B",
+        "tokensPerSecond": 16,
+        "suitable": ["DeepSeek-R1 671B", "Llama 405B", "All models"]
+      },
+      {
+        "name": "A100 80GB",
+        "upfrontCost": 15000,
+        "monthlyPower": 50,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 85,
+        "suitable": ["All models up to 70B", "Production workloads"]
+      },
+      {
+        "name": "H100 80GB",
+        "upfrontCost": 30000,
+        "monthlyPower": 90,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 140,
+        "suitable": ["High-performance production", "All models"]
+      },
+      {
+        "name": "AMD RX 7900 XTX (24GB)",
+        "upfrontCost": 900,
+        "monthlyPower": 38,
+        "maxModelSize": "14B",
+        "tokensPerSecond": 82,
+        "suitable": ["Llama 3.1 8B", "Mistral 7B", "DeepSeek-R1 14B"]
+      },
+      {
+        "name": "AMD RX 6900 XT (16GB)",
+        "upfrontCost": 550,
+        "monthlyPower": 35,
+        "maxModelSize": "8B",
+        "tokensPerSecond": 68,
+        "suitable": ["Llama 3.1 8B", "Mistral 7B", "Phi-3"]
+      },
+      {
+        "name": "2x AMD MI250X (128GB)",
+        "upfrontCost": 12000,
+        "monthlyPower": 110,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 95,
+        "suitable": ["Enterprise workloads", "All models up to 70B"]
+      },
+      {
+        "name": "AWS g5.xlarge (A10G 24GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 340,
+        "maxModelSize": "14B",
+        "tokensPerSecond": 75,
+        "suitable": ["Cloud-based", "Llama 3.1 8B", "Mistral 7B"],
+        "isCloud": true
+      },
+      {
+        "name": "AWS p4d.24xlarge (8x A100)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 24500,
+        "maxModelSize": "671B",
+        "tokensPerSecond": 650,
+        "suitable": ["Enterprise cloud", "All models", "High throughput"],
+        "isCloud": true
+      },
+      {
+        "name": "GCP n1-standard-4-v100",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 950,
+        "maxModelSize": "14B",
+        "tokensPerSecond": 65,
+        "suitable": ["Cloud-based", "Cost-effective", "Medium workloads"],
+        "isCloud": true
+      },
+      {
+        "name": "Azure NC6s_v3 (V100 16GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 900,
+        "maxModelSize": "14B",
+        "tokensPerSecond": 70,
+        "suitable": ["Azure ecosystem", "Llama 3.1 8B", "Mistral 7B"],
+        "isCloud": true
+      },
+      {
+        "name": "RunPod RTX 4090 (24GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 290,
+        "maxModelSize": "14B",
+        "tokensPerSecond": 95,
+        "suitable": ["Budget cloud", "Llama 3.1 8B", "DeepSeek-R1 14B"],
+        "isCloud": true
+      }
+    ],
+    "operationalCosts": {
+      "powerCostPerKwh": 0.12,
+      "maintenanceMonthly": 50,
+      "internetMonthly": 100,
+      "depreciationYears": 3
+    }
+  },
+  "tips": [
+    {
+      "title": "Token Estimation",
+      "content": "1 token ≈ 4 characters or ≈ 0.75 words. A typical chat message is 50-200 tokens."
+    },
+    {
+      "title": "Input vs Output",
+      "content": "For most applications, output tokens are 2-3x more than input tokens due to longer responses."
+    },
+    {
+      "title": "Batch Processing",
+      "content": "Some APIs offer batch processing discounts of 50%+ for non-real-time workloads."
+    },
+    {
+      "title": "Self-Hosting ROI",
+      "content": "Self-hosting becomes cost-effective at ~$500-1000/month API spend, depending on model size."
+    },
+    {
+      "title": "Hidden Costs",
+      "content": "Consider development time, maintenance, monitoring, and DevOps overhead for self-hosted solutions."
+    }
+  ]
+}

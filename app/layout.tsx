@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Navigation from '@/components/Navigation';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import SkipToContent from '@/components/SkipToContent';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,8 +20,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <SkipToContent />
         <Navigation />
-        {children}
+        <ErrorBoundary>
+          <main id="main-content">
+            {children}
+          </main>
+        </ErrorBoundary>
       </body>
     </html>
   );

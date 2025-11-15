@@ -2,21 +2,58 @@ import Link from 'next/link';
 
 export default function Navigation() {
   return (
-    <nav className="bg-slate-800 border-b border-slate-700">
+    <nav className="bg-slate-800 border-b border-slate-700" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="text-xl font-bold text-white hover:text-blue-400 transition">
+          <Link
+            href="/"
+            className="text-xl font-bold text-white hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+            aria-label="AI Comparisons - Home"
+          >
             AI Comparisons
           </Link>
-          <div className="flex gap-6">
-            <Link href="/mac-vs-rtx" className="text-slate-300 hover:text-white transition">
-              Hardware Comparison
+          <div className="flex gap-6" role="list">
+            <Link
+              href="/mac-vs-rtx"
+              className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+              role="listitem"
+            >
+              Hardware
             </Link>
-            <Link href="/ai-models" className="text-slate-300 hover:text-white transition">
+            <Link
+              href="/ai-models"
+              className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+              role="listitem"
+            >
               AI Models
             </Link>
-            <Link href="/ollama-models" className="text-slate-300 hover:text-white transition">
-              Ollama Models
+            <Link
+              href="/ollama-models"
+              className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+              role="listitem"
+            >
+              Ollama
+            </Link>
+            <Link
+              href="/cost-calculator"
+              className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+              role="listitem"
+            >
+              Cost Calculator
+            </Link>
+            <Link
+              href="/compare"
+              className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+              role="listitem"
+            >
+              Compare
+            </Link>
+            <Link
+              href="/recommend"
+              className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+              role="listitem"
+            >
+              Recommender
             </Link>
           </div>
         </div>

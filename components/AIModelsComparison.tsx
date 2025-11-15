@@ -1,20 +1,60 @@
 'use client';
 
-import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { Brain, Zap, DollarSign, TrendingUp, Filter, HardDrive, Cpu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ZAxis, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell } from 'recharts';
+import { Brain, Zap, DollarSign, TrendingUp, Filter, HardDrive, Cpu, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import modelsData from '@/data/models.json';
+import { AIModelsData, CustomTooltipProps, sanitizeColor } from '@/types';
+import LiveRegion from './LiveRegion';
 
 const AIModelsComparison = () => {
   const [chartView, setChartView] = useState('performance');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedModels, setSelectedModels] = useState<string[]>(['GPT-4', 'Claude 3.5 Sonnet', 'DeepSeek-R1']);
+  const [announcement, setAnnouncement] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+  const [performanceMin, setPerformanceMin] = useState(0);
+  const [contextWindowMin, setContextWindowMin] = useState(0);
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'performance' | 'speed'>('name');
 
   const models = modelsData.models;
 
-  const filteredModels = selectedCategory === 'all' 
-    ? models 
-    : models.filter(m => m.category === selectedCategory);
+  // Apply all filters
+  let filteredModels = models.filter(m => {
+    // Category filter
+    if (selectedCategory !== 'all' && m.category !== selectedCategory) return false;
+
+    // Search filter
+    if (searchQuery && !m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+
+    // Price filter
+    if (m.costPer1M < priceRange[0] || m.costPer1M > priceRange[1]) return false;
+
+    // Performance filter
+    if (m.benchmarkMMLU < performanceMin) return false;
+
+    // Context window filter
+    if (m.contextWindow < contextWindowMin) return false;
+
+    return true;
+  });
+
+  // Apply sorting
+  filteredModels = [...filteredModels].sort((a, b) => {
+    switch (sortBy) {
+      case 'price':
+        return a.costPer1M - b.costPer1M;
+      case 'performance':
+        return b.benchmarkMMLU - a.benchmarkMMLU;
+      case 'speed':
+        return b.speedTokens - a.speedTokens;
+      case 'name':
+      default:
+        return a.name.localeCompare(b.name);
+    }
+  });
 
   // Only show selected models in charts if any are selected
   const displayModels = selectedModels.length > 0 
@@ -62,19 +102,35 @@ const AIModelsComparison = () => {
   }));
 
   const toggleModel = (modelName: string) => {
-    setSelectedModels(prev => 
-      prev.includes(modelName) 
+    setSelectedModels(prev => {
+      const isSelected = prev.includes(modelName);
+      const newSelection = isSelected
         ? prev.filter(n => n !== modelName)
-        : [...prev, modelName]
-    );
+        : [...prev, modelName];
+
+      setAnnouncement(
+        isSelected
+          ? `${modelName} deselected. ${newSelection.length} models selected.`
+          : `${modelName} selected. ${newSelection.length} models selected.`
+      );
+
+      return newSelection;
+    });
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  useEffect(() => {
+    const displayCount = selectedModels.length > 0
+      ? filteredModels.filter(m => selectedModels.includes(m.name)).length
+      : filteredModels.length;
+    setAnnouncement(`Viewing ${chartView} chart with ${displayCount} models`);
+  }, [chartView]);
+
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-slate-800 border border-slate-600 rounded-lg p-4 shadow-xl">
           <p className="font-bold text-white mb-2">{payload[0].payload.name || payload[0].name}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
             </p>
@@ -85,7 +141,7 @@ const AIModelsComparison = () => {
     return null;
   };
 
-  const CustomScatterTooltip = ({ active, payload }: any) => {
+  const CustomScatterTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -102,6 +158,7 @@ const AIModelsComparison = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white">
+      <LiveRegion message={announcement} />
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -110,8 +167,170 @@ const AIModelsComparison = () => {
           <p className="text-slate-300 text-lg">Compare leading language models across performance, cost, and capabilities</p>
         </div>
 
+        {/* Search & Filter Controls */}
+        <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <label htmlFor="model-search" className="block text-sm font-semibold mb-2">
+                Search Models
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+                <input
+                  id="model-search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setAnnouncement(`${filteredModels.length} models found`);
+                  }}
+                  placeholder="Search by model name..."
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-11 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  aria-label="Search AI models by name"
+                />
+              </div>
+            </div>
+
+            {/* Sort */}
+            <div className="md:w-48">
+              <label htmlFor="sort-models" className="block text-sm font-semibold mb-2">
+                Sort By
+              </label>
+              <div className="relative">
+                <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+                <select
+                  id="sort-models"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-11 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none"
+                  aria-label="Sort models by"
+                >
+                  <option value="name">Name</option>
+                  <option value="price">Price (Low to High)</option>
+                  <option value="performance">Performance (High to Low)</option>
+                  <option value="speed">Speed (High to Low)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Advanced Filters Toggle */}
+            <div className="md:w-auto flex items-end">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                  showFilters
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                aria-expanded={showFilters}
+                aria-controls="advanced-filters"
+                aria-label="Toggle advanced filters"
+              >
+                <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
+                Filters
+              </button>
+            </div>
+          </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div id="advanced-filters" className="mt-6 pt-6 border-t border-slate-600">
+              <h3 className="text-lg font-bold mb-4">Advanced Filters</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                {/* Price Range */}
+                <div>
+                  <label htmlFor="price-min" className="block text-sm font-semibold mb-2">
+                    Price Range ($/1M tokens)
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      id="price-min"
+                      type="number"
+                      value={priceRange[0]}
+                      onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                      min="0"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      aria-label="Minimum price"
+                    />
+                    <span className="text-slate-400">to</span>
+                    <input
+                      id="price-max"
+                      type="number"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                      min="0"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      aria-label="Maximum price"
+                    />
+                  </div>
+                </div>
+
+                {/* Performance Filter */}
+                <div>
+                  <label htmlFor="performance-min" className="block text-sm font-semibold mb-2">
+                    Min MMLU Score: {performanceMin}
+                  </label>
+                  <input
+                    id="performance-min"
+                    type="range"
+                    value={performanceMin}
+                    onChange={(e) => setPerformanceMin(Number(e.target.value))}
+                    min="0"
+                    max="100"
+                    step="5"
+                    className="w-full"
+                    aria-label="Minimum MMLU performance score"
+                  />
+                </div>
+
+                {/* Context Window Filter */}
+                <div>
+                  <label htmlFor="context-min" className="block text-sm font-semibold mb-2">
+                    Min Context: {contextWindowMin.toLocaleString()}K
+                  </label>
+                  <input
+                    id="context-min"
+                    type="range"
+                    value={contextWindowMin}
+                    onChange={(e) => setContextWindowMin(Number(e.target.value))}
+                    min="0"
+                    max="200"
+                    step="10"
+                    className="w-full"
+                    aria-label="Minimum context window size"
+                  />
+                </div>
+              </div>
+
+              {/* Reset Filters */}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    setPriceRange([0, 100]);
+                    setPerformanceMin(0);
+                    setContextWindowMin(0);
+                    setSearchQuery('');
+                    setSortBy('name');
+                    setAnnouncement('All filters reset');
+                  }}
+                  className="px-4 py-2 bg-slate-600 hover:bg-slate-500 rounded-lg text-sm font-semibold transition"
+                  aria-label="Reset all filters"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Results Count */}
+          <div className="mt-4 text-center text-sm text-slate-400">
+            Showing {filteredModels.length} of {models.length} models
+          </div>
+        </div>
+
         {/* Category Filter */}
-        <div className="flex justify-center gap-4 mb-8">
+        <div className="flex justify-center gap-4 mb-8" role="group" aria-label="Filter AI models by category">
           <button
             onClick={() => setSelectedCategory('all')}
             className={`px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 ${
@@ -119,8 +338,10 @@ const AIModelsComparison = () => {
                 ? 'bg-blue-600 text-white shadow-lg scale-105'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
+            aria-pressed={selectedCategory === 'all'}
+            aria-label="Show all AI models"
           >
-            <Filter className="w-4 h-4" />
+            <Filter className="w-4 h-4" aria-hidden="true" />
             All Models
           </button>
           <button
@@ -130,6 +351,8 @@ const AIModelsComparison = () => {
                 ? 'bg-purple-600 text-white shadow-lg scale-105'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
+            aria-pressed={selectedCategory === 'Proprietary'}
+            aria-label="Show proprietary AI models only"
           >
             Proprietary
           </button>
@@ -140,13 +363,15 @@ const AIModelsComparison = () => {
                 ? 'bg-green-600 text-white shadow-lg scale-105'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
+            aria-pressed={selectedCategory === 'Open Source'}
+            aria-label="Show open source AI models only"
           >
             Open Source
           </button>
         </div>
 
         {/* Chart View Selector */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
+        <div className="flex flex-wrap justify-center gap-3 mb-8" role="group" aria-label="Select chart visualization type">
           <button
             onClick={() => setChartView('performance')}
             className={`px-5 py-2.5 rounded-lg font-semibold transition-all text-sm ${
@@ -201,8 +426,8 @@ const AIModelsComparison = () => {
 
         {/* Model Selection */}
         <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
-          <h3 className="text-lg font-bold mb-4 text-center">Select Models to Compare</h3>
-          <div className="flex flex-wrap justify-center gap-3">
+          <h3 className="text-lg font-bold mb-4 text-center" id="model-selection-label">Select Models to Compare</h3>
+          <div className="flex flex-wrap justify-center gap-3" role="group" aria-labelledby="model-selection-label">
             {filteredModels.map((model) => (
               <button
                 key={model.name}
@@ -213,8 +438,10 @@ const AIModelsComparison = () => {
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
                 style={{
-                  backgroundColor: selectedModels.includes(model.name) ? model.color : undefined
+                  backgroundColor: selectedModels.includes(model.name) ? sanitizeColor(model.color) : undefined
                 }}
+                aria-pressed={selectedModels.includes(model.name)}
+                aria-label={`${selectedModels.includes(model.name) ? 'Deselect' : 'Select'} ${model.name} for comparison`}
               >
                 {model.name}
               </button>
@@ -231,10 +458,15 @@ const AIModelsComparison = () => {
         </div>
 
         {/* Main Chart */}
-        <div className="bg-slate-800/50 rounded-xl p-8 mb-8 backdrop-blur border border-slate-700">
+        <div className="bg-slate-800/50 rounded-xl p-8 mb-8 backdrop-blur border border-slate-700" role="region" aria-label={`${chartView} chart visualization`}>
           {chartView === 'performance' && (
             <div>
-              <h2 className="text-2xl font-bold mb-6 text-center">Benchmark Performance Comparison</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center" id="performance-chart-title">Benchmark Performance Comparison</h2>
+              <div role="img" aria-labelledby="performance-chart-title" aria-describedby="performance-chart-desc">
+                <span id="performance-chart-desc" className="sr-only">
+                  Bar chart comparing AI models across MMLU Score, HumanEval Score, and Quality Rating.
+                  {displayModels.length} models displayed. Use table below for detailed data.
+                </span>
               <ResponsiveContainer width="100%" height={450}>
                 <BarChart data={performanceData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
@@ -253,6 +485,7 @@ const AIModelsComparison = () => {
                   <Bar dataKey="Quality Rating" fill="#10b981" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
               <p className="text-xs text-slate-400 text-center mt-4">
                 MMLU: Massive Multitask Language Understanding | HumanEval: Code generation benchmark
               </p>
@@ -313,7 +546,7 @@ const AIModelsComparison = () => {
                   <Tooltip content={<CustomScatterTooltip />} />
                   <Scatter data={costSpeedData} fill="#8884d8">
                     {costSpeedData.map((entry, index) => (
-                      <circle key={`cell-${index}`} fill={entry.fill} />
+                      <Cell key={`cell-${index}`} fill={sanitizeColor(entry.fill)} />
                     ))}
                   </Scatter>
                 </ScatterChart>
@@ -369,7 +602,7 @@ const AIModelsComparison = () => {
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="parameters" radius={[8, 8, 0, 0]}>
                     {parametersData.map((entry, index) => (
-                      <cell key={`cell-${index}`} fill={entry.fill} />
+                      <Cell key={`cell-${index}`} fill={sanitizeColor(entry.fill)} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -382,11 +615,21 @@ const AIModelsComparison = () => {
         </div>
 
         {/* Model Cards Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8" role="list" aria-label="AI model details cards">
           {filteredModels.map((model) => (
             <div
               key={model.name}
               onClick={() => toggleModel(model.name)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleModel(model.name);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-pressed={selectedModels.includes(model.name)}
+              aria-label={`${model.name} model card. ${selectedModels.includes(model.name) ? 'Selected' : 'Not selected'}. Press to ${selectedModels.includes(model.name) ? 'deselect' : 'select'}.`}
               className={`cursor-pointer transform transition-all duration-300 ${
                 selectedModels.includes(model.name) ? 'scale-105 shadow-2xl' : 'hover:scale-102'
               }`}
@@ -395,7 +638,7 @@ const AIModelsComparison = () => {
                 className={`rounded-xl p-6 border-2 ${
                   selectedModels.includes(model.name) ? 'border-white' : 'border-transparent'
                 }`}
-                style={{ backgroundColor: `${model.color}20`, borderColor: selectedModels.includes(model.name) ? model.color : 'transparent' }}
+                style={{ backgroundColor: `${sanitizeColor(model.color)}20`, borderColor: selectedModels.includes(model.name) ? sanitizeColor(model.color) : 'transparent' }}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>

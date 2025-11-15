@@ -53,6 +53,48 @@ export default function Home() {
               </div>
             </div>
           </Link>
+
+          <Link href="/cost-calculator" className="group">
+            <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-yellow-500 cursor-pointer">
+              <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-yellow-400 transition-colors">
+                Cost Calculator
+              </h2>
+              <p className="text-slate-300 mb-4">
+                Estimate monthly costs and compare API vs self-hosting expenses
+              </p>
+              <div className="flex items-center text-yellow-400 font-semibold">
+                Calculate Costs →
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/compare" className="group">
+            <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-cyan-500 cursor-pointer">
+              <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-cyan-400 transition-colors">
+                Compare Models
+              </h2>
+              <p className="text-slate-300 mb-4">
+                Side-by-side detailed comparison of up to 4 AI models
+              </p>
+              <div className="flex items-center text-cyan-400 font-semibold">
+                Compare Now →
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/recommend" className="group">
+            <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-pink-500 cursor-pointer">
+              <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-pink-400 transition-colors">
+                AI Recommender
+              </h2>
+              <p className="text-slate-300 mb-4">
+                Answer questions to get personalized AI model recommendations
+              </p>
+              <div className="flex items-center text-pink-400 font-semibold">
+                Find My Model →
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
     </div>
