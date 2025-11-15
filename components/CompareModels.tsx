@@ -1,12 +1,47 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Check, X, Minus, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Check, X, Minus, ArrowRight, Share2, Save, Bookmark, Copy, CheckCircle } from 'lucide-react';
 import modelsData from '@/data/models.json';
 import { sanitizeColor } from '@/types';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const CompareModels = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedModels, setSelectedModels] = useState<string[]>(['GPT-4', 'Claude 3.5 Sonnet']);
+  const [savedComparisons, setSavedComparisons] = useState<Array<{name: string, models: string[]}>>([]);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveName, setSaveName] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // Load from URL params on mount
+  useEffect(() => {
+    const modelsParam = searchParams.get('models');
+    if (modelsParam) {
+      const modelNames = modelsParam.split(',').filter(name =>
+        modelsData.models.some(m => m.name === name)
+      );
+      if (modelNames.length > 0) {
+        setSelectedModels(modelNames.slice(0, 4)); // Max 4 models
+      }
+    }
+
+    // Load saved comparisons from localStorage
+    const saved = localStorage.getItem('savedComparisons');
+    if (saved) {
+      setSavedComparisons(JSON.parse(saved));
+    }
+  }, [searchParams]);
+
+  // Update URL when models change
+  useEffect(() => {
+    if (selectedModels.length > 0) {
+      const params = new URLSearchParams();
+      params.set('models', selectedModels.join(','));
+      router.replace(`/compare?${params.toString()}`, { scroll: false });
+    }
+  }, [selectedModels, router]);
 
   const toggleModel = (modelName: string) => {
     setSelectedModels(prev => {
@@ -17,6 +52,44 @@ const CompareModels = () => {
       }
       return prev;
     });
+  };
+
+  const shareComparison = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const saveComparison = () => {
+    if (!saveName.trim()) return;
+
+    const newComparison = {
+      name: saveName,
+      models: selectedModels,
+      date: new Date().toISOString()
+    };
+
+    const updated = [...savedComparisons, newComparison];
+    setSavedComparisons(updated);
+    localStorage.setItem('savedComparisons', JSON.stringify(updated));
+
+    setSaveName('');
+    setShowSaveDialog(false);
+  };
+
+  const loadComparison = (models: string[]) => {
+    setSelectedModels(models);
+  };
+
+  const deleteComparison = (index: number) => {
+    const updated = savedComparisons.filter((_, i) => i !== index);
+    setSavedComparisons(updated);
+    localStorage.setItem('savedComparisons', JSON.stringify(updated));
   };
 
   const comparisonModels = modelsData.models.filter(m => selectedModels.includes(m.name));
@@ -50,6 +123,108 @@ const CompareModels = () => {
           </h1>
           <p className="text-slate-300 text-lg">Compare up to 4 AI models in detail</p>
         </div>
+
+        {/* Share & Save Actions */}
+        {selectedModels.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <button
+              onClick={shareComparison}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold transition flex items-center gap-2"
+            >
+              {copySuccess ? (
+                <>
+                  <CheckCircle className="w-5 h-5" />
+                  Link Copied!
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-5 h-5" />
+                  Share Comparison
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => setShowSaveDialog(true)}
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-semibold transition flex items-center gap-2"
+            >
+              <Save className="w-5 h-5" />
+              Save Comparison
+            </button>
+          </div>
+        )}
+
+        {/* Save Dialog */}
+        {showSaveDialog && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border border-slate-700">
+              <h3 className="text-xl font-bold mb-4">Save Comparison</h3>
+              <input
+                type="text"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder="Enter a name for this comparison..."
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white mb-4 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={saveComparison}
+                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-semibold transition"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSaveDialog(false);
+                    setSaveName('');
+                  }}
+                  className="flex-1 px-4 py-2 bg-slate-600 hover:bg-slate-500 rounded-lg font-semibold transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Saved Comparisons */}
+        {savedComparisons.length > 0 && (
+          <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Bookmark className="w-5 h-5 text-yellow-400" />
+              My Saved Comparisons
+            </h2>
+            <div className="grid md:grid-cols-2 gap-3">
+              {savedComparisons.map((comp, index) => (
+                <div
+                  key={index}
+                  className="bg-slate-700/50 rounded-lg p-4 flex items-center justify-between group"
+                >
+                  <div className="flex-1">
+                    <div className="font-semibold">{comp.name}</div>
+                    <div className="text-xs text-slate-400 mt-1">
+                      {comp.models.join(', ')}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => loadComparison(comp.models)}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm font-semibold transition"
+                    >
+                      Load
+                    </button>
+                    <button
+                      onClick={() => deleteComparison(index)}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-500 rounded text-sm font-semibold transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Model Selection */}
         <div className="bg-slate-800/50 rounded-xl p-6 mb-8 backdrop-blur border border-slate-700">
