@@ -41,6 +41,13 @@ export default function Navigation() {
             >
               Cost Calculator
             </Link>
+            <Link
+              href="/compare"
+              className="text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-800 rounded px-2 py-1"
+              role="listitem"
+            >
+              Compare
+            </Link>
           </div>
         </div>
       </div>

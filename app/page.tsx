@@ -11,7 +11,7 @@ export default function Home() {
           Interactive charts and diagrams comparing AI models and hardware
         </p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           <Link href="/mac-vs-rtx" className="group">
             <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-blue-500 cursor-pointer">
               <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors">
@@ -64,6 +64,20 @@ export default function Home() {
               </p>
               <div className="flex items-center text-yellow-400 font-semibold">
                 Calculate Costs →
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/compare" className="group">
+            <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-cyan-500 cursor-pointer">
+              <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-cyan-400 transition-colors">
+                Compare Models
+              </h2>
+              <p className="text-slate-300 mb-4">
+                Side-by-side detailed comparison of up to 4 AI models
+              </p>
+              <div className="flex items-center text-cyan-400 font-semibold">
+                Compare Now →
               </div>
             </div>
           </Link>
