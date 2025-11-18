@@ -15,6 +15,7 @@ export default function Navigation() {
     { href: '/cost-calculator', label: 'Cost Calculator' },
     { href: '/compare', label: 'Compare' },
     { href: '/recommend', label: 'Recommender' },
+    { href: '/faq', label: 'FAQ' },
     { href: '/sitemap', label: 'Sitemap' },
   ];
 
