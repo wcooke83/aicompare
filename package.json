@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "clean": "rimraf .next node_modules/.cache",
+    "clean:dev": "npm run clean && npm run dev",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
