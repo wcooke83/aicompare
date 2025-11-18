@@ -244,6 +244,176 @@
         "tokensPerSecond": 95,
         "suitable": ["Budget cloud", "Llama 3.1 8B", "DeepSeek-R1 14B"],
         "isCloud": true
+      },
+      {
+        "name": "Lambda Labs 1x A100 (40GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 792,
+        "maxModelSize": "34B",
+        "tokensPerSecond": 85,
+        "suitable": ["Cost-effective A100", "Llama 3.1 70B", "Medium models"],
+        "isCloud": true
+      },
+      {
+        "name": "Lambda Labs 8x A100 (320GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 6336,
+        "maxModelSize": "671B",
+        "tokensPerSecond": 680,
+        "suitable": ["Multi-GPU training", "Large models", "Production"],
+        "isCloud": true
+      },
+      {
+        "name": "Lambda Labs 1x H100 (80GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 1793,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 140,
+        "suitable": ["Latest GPU", "High performance", "LLM training"],
+        "isCloud": true
+      },
+      {
+        "name": "RunPod A100 80GB",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 1360,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 90,
+        "suitable": ["Large VRAM", "Production workloads"],
+        "isCloud": true
+      },
+      {
+        "name": "RunPod H100 80GB",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 2800,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 140,
+        "suitable": ["Cutting-edge", "Fastest inference"],
+        "isCloud": true
+      },
+      {
+        "name": "Vast.ai RTX 3090 (24GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 216,
+        "maxModelSize": "14B",
+        "tokensPerSecond": 70,
+        "suitable": ["Ultra budget", "Testing", "Development"],
+        "isCloud": true
+      },
+      {
+        "name": "Vast.ai A100 80GB",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 864,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 90,
+        "suitable": ["Budget A100", "Community cloud"],
+        "isCloud": true
+      },
+      {
+        "name": "GCP a2-highgpu-1g (A100 40GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 2642,
+        "maxModelSize": "34B",
+        "tokensPerSecond": 85,
+        "suitable": ["GCP ecosystem", "Enterprise", "ML training"],
+        "isCloud": true
+      },
+      {
+        "name": "GCP a3-highgpu-8g (8x H100)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 68054,
+        "maxModelSize": "671B",
+        "tokensPerSecond": 1120,
+        "suitable": ["Frontier AI", "Largest workloads", "Enterprise"],
+        "isCloud": true
+      },
+      {
+        "name": "Azure ND96asr v4 (8x A100)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 19584,
+        "maxModelSize": "671B",
+        "tokensPerSecond": 760,
+        "suitable": ["Azure enterprise", "Large-scale ML"],
+        "isCloud": true
+      },
+      {
+        "name": "Azure ND96isr H100 v5 (8x H100)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 64800,
+        "maxModelSize": "671B",
+        "tokensPerSecond": 1120,
+        "suitable": ["Azure H100", "Cutting-edge AI"],
+        "isCloud": true
+      },
+      {
+        "name": "CoreWeave H100 NVLINK",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 3427,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 140,
+        "suitable": ["Specialized AI cloud", "High bandwidth"],
+        "isCloud": true
+      },
+      {
+        "name": "CoreWeave 8x H100 NVLINK",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 27418,
+        "maxModelSize": "671B",
+        "tokensPerSecond": 1120,
+        "suitable": ["Multi-GPU", "Frontier AI models"],
+        "isCloud": true
+      },
+      {
+        "name": "Paperspace A100 80GB",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 2225,
+        "maxModelSize": "70B",
+        "tokensPerSecond": 90,
+        "suitable": ["Developer-friendly", "Notebooks"],
+        "isCloud": true
+      },
+      {
+        "name": "AWS g5.2xlarge (A10G 24GB)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 873,
+        "maxModelSize": "14B",
+        "tokensPerSecond": 80,
+        "suitable": ["AWS ecosystem", "Inference", "Medium workloads"],
+        "isCloud": true
+      },
+      {
+        "name": "AWS p5.48xlarge (8x H100)",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 70790,
+        "maxModelSize": "671B",
+        "tokensPerSecond": 1120,
+        "suitable": ["AWS latest", "Frontier AI", "Enterprise"],
+        "isCloud": true
+      },
+      {
+        "name": "GCP n1-standard-4 + T4",
+        "upfrontCost": 0,
+        "monthlyPower": 0,
+        "monthlyCloudCost": 468,
+        "maxModelSize": "8B",
+        "tokensPerSecond": 60,
+        "suitable": ["Entry-level", "Inference", "Budget"],
+        "isCloud": true
       }
     ],
     "operationalCosts": {

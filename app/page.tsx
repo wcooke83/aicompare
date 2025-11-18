@@ -54,6 +54,20 @@ export default function Home() {
             </div>
           </Link>
 
+          <Link href="/cloud-gpus" className="group">
+            <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-orange-500 cursor-pointer">
+              <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-orange-400 transition-colors">
+                Cloud GPU Comparison
+              </h2>
+              <p className="text-slate-300 mb-4">
+                Compare cloud GPU pricing across AWS, GCP, Azure, Lambda Labs, and more
+              </p>
+              <div className="flex items-center text-orange-400 font-semibold">
+                Compare GPUs →
+              </div>
+            </div>
+          </Link>
+
           <Link href="/cost-calculator" className="group">
             <div className="bg-slate-800 rounded-xl p-8 hover:bg-slate-750 transition-all border-2 border-transparent hover:border-yellow-500 cursor-pointer">
               <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-yellow-400 transition-colors">
