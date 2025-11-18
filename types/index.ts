@@ -143,3 +143,67 @@ export function validateOllamaModel(model: any): model is OllamaModel {
     Array.isArray(model.features)
   );
 }
+
+// Cloud GPU Types
+export interface CloudGPUInstance {
+  name: string;
+  gpu: string;
+  gpuCount: number;
+  vram: number;
+  vcpus: number;
+  ram: number;
+  storage: string;
+  onDemandPrice: number;
+  spotPrice: number | null;
+  currency: string;
+  pricingUnit: string;
+  regions: number;
+  bestFor: string[];
+  performanceScore: number;
+}
+
+export interface CloudGPUProvider {
+  name: string;
+  fullName: string;
+  website: string;
+  color: string;
+  instances: CloudGPUInstance[];
+}
+
+export interface GPUTier {
+  tier: string;
+  gpus: string[];
+  vram: string;
+  bestFor: string;
+}
+
+export interface PricingStrategy {
+  strategy: string;
+  savings: string;
+  tradeoff: string;
+  providers: string[];
+}
+
+export interface CloudGPUComparisonMetrics {
+  categories: string[];
+  gpuTiers: GPUTier[];
+  pricingStrategies: PricingStrategy[];
+}
+
+export interface CloudGPUData {
+  providers: CloudGPUProvider[];
+  comparisonMetrics: CloudGPUComparisonMetrics;
+}
+
+export function validateCloudGPUInstance(instance: any): instance is CloudGPUInstance {
+  return (
+    typeof instance === 'object' &&
+    typeof instance.name === 'string' &&
+    typeof instance.gpu === 'string' &&
+    typeof instance.gpuCount === 'number' &&
+    typeof instance.vram === 'number' &&
+    typeof instance.onDemandPrice === 'number' &&
+    (instance.spotPrice === null || typeof instance.spotPrice === 'number') &&
+    Array.isArray(instance.bestFor)
+  );
+}

@@ -25,6 +25,7 @@ const CostCalculator = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [modelSearchQuery, setModelSearchQuery] = useState('');
   const [announcement, setAnnouncement] = useState('');
+  const [hardwareFilter, setHardwareFilter] = useState<'all' | 'cloud' | 'onpremise'>('all');
 
   const preset = costData.usagePresets.find(p => p.id === selectedPreset);
   const currency = getCurrency(selectedCurrency, costData.currencies as Record<string, Currency>);
@@ -92,7 +93,14 @@ const CostCalculator = () => {
     };
   };
 
-  const selfHostingCosts = costData.selfHostingCosts.hardware.map(calculateSelfHostingCost);
+  const allSelfHostingCosts = costData.selfHostingCosts.hardware.map(calculateSelfHostingCost);
+
+  const selfHostingCosts = allSelfHostingCosts.filter((hardware) => {
+    if (hardwareFilter === 'all') return true;
+    if (hardwareFilter === 'cloud') return hardware.isCloud;
+    if (hardwareFilter === 'onpremise') return !hardware.isCloud;
+    return true;
+  });
 
   const toggleModel = (modelName: string) => {
     setSelectedModels(prev => {
@@ -418,8 +426,67 @@ const CostCalculator = () => {
           {showSelfHosting && (
             <div id="self-hosting-section" className="mt-6">
               <p className="text-slate-300 mb-4">
-                Compare API costs with self-hosting open-source models on your own hardware.
+                Compare API costs with self-hosting open-source models on your own hardware or cloud GPUs.
               </p>
+
+              {/* Hardware Filter */}
+              <div className="flex flex-wrap gap-3 mb-6">
+                <button
+                  onClick={() => setHardwareFilter('all')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    hardwareFilter === 'all'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                  aria-pressed={hardwareFilter === 'all'}
+                >
+                  All Hardware ({allSelfHostingCosts.length})
+                </button>
+                <button
+                  onClick={() => setHardwareFilter('cloud')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                    hardwareFilter === 'cloud'
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                  aria-pressed={hardwareFilter === 'cloud'}
+                >
+                  <Cloud className="w-4 h-4" aria-hidden="true" />
+                  Cloud GPUs ({allSelfHostingCosts.filter(h => h.isCloud).length})
+                </button>
+                <button
+                  onClick={() => setHardwareFilter('onpremise')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                    hardwareFilter === 'onpremise'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                  aria-pressed={hardwareFilter === 'onpremise'}
+                >
+                  <Server className="w-4 h-4" aria-hidden="true" />
+                  On-Premise ({allSelfHostingCosts.filter(h => !h.isCloud).length})
+                </button>
+              </div>
+
+              {/* Link to Cloud GPU Comparison */}
+              {hardwareFilter === 'cloud' && (
+                <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <h3 className="font-bold text-blue-400 mb-2 flex items-center gap-2">
+                    <Cloud className="w-4 h-4" aria-hidden="true" />
+                    Detailed Cloud GPU Comparison
+                  </h3>
+                  <p className="text-sm text-slate-300 mb-3">
+                    Looking for more cloud GPU options? Check out our comprehensive cloud GPU comparison page with pricing from AWS, GCP, Azure, Lambda Labs, RunPod, Vast.ai, and more.
+                  </p>
+                  <a
+                    href="/cloud-gpus"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all"
+                  >
+                    <Cloud className="w-4 h-4" aria-hidden="true" />
+                    Compare Cloud GPUs
+                  </a>
+                </div>
+              )}
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm" role="table" aria-label="Self-hosting cost comparison">
