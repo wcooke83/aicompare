@@ -1,0 +1,232 @@
+{
+  "categories": [
+    {
+      "id": "cloud-gpus",
+      "name": "Cloud GPUs",
+      "icon": "cloud",
+      "description": "Questions about cloud GPU providers and pricing",
+      "questions": [
+        {
+          "id": "what-is-spot-pricing",
+          "question": "What is spot/preemptible pricing?",
+          "answer": "Spot or preemptible pricing allows you to use unused cloud capacity at a significant discount (60-80% off) compared to on-demand pricing. The tradeoff is that your instance can be interrupted with short notice when the cloud provider needs the capacity back. Best for fault-tolerant workloads like batch processing, training jobs with checkpointing, or dev/test environments.",
+          "tags": ["pricing", "spot", "cloud"]
+        },
+        {
+          "id": "best-value-gpu",
+          "question": "What's the best value cloud GPU for AI training?",
+          "answer": "For most AI training workloads, RunPod RTX 4090, Vast.ai A100 80GB, and Lambda Labs A100 offer the best value (performance per dollar). If you need spot pricing, consider AWS g5 instances or GCP with preemptible instances. Use our 'Best Value' chart view on the Cloud GPU Comparison page to find current deals.",
+          "tags": ["value", "training", "recommendations"]
+        },
+        {
+          "id": "multi-gpu-setup",
+          "question": "When do I need a multi-GPU setup?",
+          "answer": "You need multiple GPUs when: 1) Your model is too large for a single GPU's VRAM (e.g., 405B+ parameter models), 2) You want to speed up training through data parallelism, 3) You're doing distributed inference for high throughput. For models under 70B parameters, a single high-VRAM GPU (A100 80GB, H100) is usually sufficient.",
+          "tags": ["multi-gpu", "hardware", "training"]
+        },
+        {
+          "id": "aws-vs-lambda-vs-runpod",
+          "question": "Should I use AWS, Lambda Labs, or RunPod?",
+          "answer": "AWS: Best for enterprise with existing AWS infrastructure, high availability needs, and diverse instance types. Lambda Labs: Best for AI-focused workloads with simple pricing and good value A100/H100 options. RunPod: Best for budget-conscious users, supports consumer GPUs (RTX 4090), competitive spot pricing. Consider Lambda/RunPod for pure ML workloads, AWS for production services requiring high uptime.",
+          "tags": ["providers", "comparison"]
+        },
+        {
+          "id": "reserved-pricing-worth-it",
+          "question": "Are reserved/committed instances worth it?",
+          "answer": "Reserved pricing (1-3 year commitment) saves 30-50% vs on-demand. Worth it if: 1) You have consistent, predictable workloads, 2) You're already spending $1000+/month, 3) You can commit to the instance type and region. Not worth it for experimental projects or if your needs might change. Start with on-demand, then switch to reserved once usage patterns are clear.",
+          "tags": ["pricing", "cost-optimization"]
+        }
+      ]
+    },
+    {
+      "id": "ai-models",
+      "name": "AI Models",
+      "icon": "cpu",
+      "description": "Questions about AI model selection and usage",
+      "questions": [
+        {
+          "id": "gpt4-vs-claude",
+          "question": "GPT-4 vs Claude 3.5 Sonnet: Which is better?",
+          "answer": "Claude 3.5 Sonnet generally excels at coding (92 HumanEval vs 67), has a larger context window (200K vs 128K), and is 10x cheaper ($3/M vs $30/M tokens). GPT-4 has broader integration ecosystem and slightly better on some creative tasks. For most coding, analysis, and long-context tasks, Claude 3.5 Sonnet offers better value and performance.",
+          "tags": ["comparison", "gpt-4", "claude"]
+        },
+        {
+          "id": "proprietary-vs-open-source",
+          "question": "Should I use proprietary or open-source models?",
+          "answer": "Proprietary (GPT-4, Claude): Better out-of-box performance, no infrastructure needed, regular updates. Best for production apps where quality matters most. Open-source (Llama, Mistral, DeepSeek): Full control, data privacy, no per-token costs, customizable. Best when you have inference infrastructure, need data privacy, or have high volume (>1M tokens/day). Rule of thumb: Start with API, self-host when monthly costs exceed $500-1000.",
+          "tags": ["model-selection", "open-source", "proprietary"]
+        },
+        {
+          "id": "context-window-importance",
+          "question": "How important is context window size?",
+          "answer": "Very important for: document analysis, long conversations, codebase understanding, and multi-turn interactions. Not important for: simple Q&A, classification, or short-form generation. 8K tokens ≈ 6000 words, enough for most tasks. 32K+ needed for full document analysis. 100K+ for entire codebases or books. Larger contexts also cost more per token.",
+          "tags": ["context-window", "specifications"]
+        },
+        {
+          "id": "deepseek-r1-worth-it",
+          "question": "Is DeepSeek-R1 worth the massive compute requirements?",
+          "answer": "DeepSeek-R1 (671B) requires 320+ GB VRAM (8x A100 or H100 minimum) and significant inference costs. Worth it if: 1) You need frontier-level reasoning, 2) You're doing research requiring state-of-art performance, 3) You have the infrastructure. Not worth it for most production use cases - Llama 3.1 70B or even 405B offer 90% of the capability at 1/10th the cost. Consider API access first before self-hosting.",
+          "tags": ["deepseek", "large-models"]
+        },
+        {
+          "id": "quantization-tradeoff",
+          "question": "What's the quality tradeoff with quantization?",
+          "answer": "Quantization reduces model size/VRAM by using lower precision. 16-bit (FP16): No quality loss, 2x smaller. 8-bit (INT8): Minimal quality loss (<1%), 4x smaller. 4-bit (GPTQ/AWQ): Small quality loss (2-5%), 8x smaller. For most use cases, 8-bit is the sweet spot - great quality, half the VRAM. 4-bit is acceptable for non-critical applications. Always test with your specific use case.",
+          "tags": ["quantization", "optimization"]
+        }
+      ]
+    },
+    {
+      "id": "cost-optimization",
+      "name": "Cost & ROI",
+      "icon": "dollar-sign",
+      "description": "Questions about costs and return on investment",
+      "questions": [
+        {
+          "id": "when-self-host",
+          "question": "When should I switch from API to self-hosting?",
+          "answer": "Self-hosting becomes cost-effective around $500-1000/month API spend, depending on model size and usage patterns. Break-even calculation: Hardware cost / (Monthly API cost - Self-hosting operational cost). Also consider: 1) DevOps time/expertise, 2) Uptime requirements (cloud APIs have better SLAs), 3) Data privacy needs, 4) Scaling requirements. Use our Cost Calculator to compare specific scenarios.",
+          "tags": ["self-hosting", "roi", "cost"]
+        },
+        {
+          "id": "hidden-costs-self-hosting",
+          "question": "What are the hidden costs of self-hosting?",
+          "answer": "Beyond hardware: 1) Power (can be $50-200/month for high-end GPUs), 2) Cooling/infrastructure, 3) DevOps time (setup, maintenance, monitoring), 4) Downtime costs (no SLA like cloud APIs), 5) Model updates/fine-tuning, 6) Backup GPU if main fails. Budget 20-40% more than just hardware + power. Cloud instances avoid most hidden costs but have higher per-hour rates.",
+          "tags": ["self-hosting", "hidden-costs"]
+        },
+        {
+          "id": "batch-processing-savings",
+          "question": "How much can I save with batch processing?",
+          "answer": "Many APIs offer 50-75% discounts for batch/asynchronous processing (OpenAI, Anthropic). Requirements: 1) Non-real-time workloads, 2) Can wait 1-24 hours for results, 3) Process in bulk. Great for: data analysis, content generation, embeddings, evaluation. Not suitable for: chatbots, real-time apps, user-facing features. Can reduce costs more than self-hosting for suitable workloads.",
+          "tags": ["batch-processing", "optimization"]
+        },
+        {
+          "id": "token-estimation",
+          "question": "How do I estimate token usage?",
+          "answer": "Rule of thumb: 1 token ≈ 4 characters ≈ 0.75 words. Examples: Short chat (50-100 tokens), Email (200-500 tokens), Article (1000-2000 tokens), Book chapter (5000-10000 tokens). Input vs Output: Most apps generate 2-3x more output than input tokens. Track actual usage for 1-2 weeks, then extrapolate. Add 20% buffer for safety. Our Cost Calculator can help with estimates.",
+          "tags": ["tokens", "estimation"]
+        },
+        {
+          "id": "cost-per-user",
+          "question": "What's a reasonable AI cost per user?",
+          "answer": "Varies by application: Light chatbot: $0.01-0.05/user/month. Standard assistant: $0.10-0.50/user/month. Heavy analysis app: $1-5/user/month. Aim for AI costs <10% of revenue per user. If costs exceed $1/user/month, consider: 1) Caching frequent responses, 2) Smaller models for simple tasks, 3) Batch processing, 4) Self-hosting at scale. Track per-user metrics to optimize.",
+          "tags": ["cost-per-user", "business"]
+        }
+      ]
+    },
+    {
+      "id": "hardware",
+      "name": "Hardware & Infrastructure",
+      "icon": "server",
+      "description": "Questions about GPU hardware and setup",
+      "questions": [
+        {
+          "id": "mac-vs-nvidia",
+          "question": "Mac Studio (M2 Ultra) vs NVIDIA GPUs for AI?",
+          "answer": "Mac M2 Ultra (192GB): Great for inference up to 70B models, unified memory allows large models, low power (15W), silent. Limited training performance, no CUDA (some frameworks unsupported). NVIDIA (RTX 4090, A100): Better training, full framework support, better $/performance for pure compute. Mac is best for developers who want quiet, efficient inference. NVIDIA for production training/serving.",
+          "tags": ["mac", "nvidia", "hardware"]
+        },
+        {
+          "id": "vram-vs-ram",
+          "question": "VRAM vs RAM: What's the difference for AI?",
+          "answer": "VRAM (GPU memory): Stores model weights and activations during computation. Critical for AI - determines max model size you can run. Must fit entire model (or model shard). RAM (system memory): Stores data, preprocessing, datasets. Less critical for inference. Apple Silicon uses unified memory (shared VRAM/RAM), more flexible. For AI: VRAM is the bottleneck, 24GB minimum for 7B models, 80GB for 70B models.",
+          "tags": ["vram", "memory", "specs"]
+        },
+        {
+          "id": "consumer-vs-datacenter",
+          "question": "Consumer GPU (RTX 4090) vs Datacenter GPU (A100)?",
+          "answer": "RTX 4090: $1600, 24GB, 95 tok/s, great value for single-GPU inference/small training. Limited to 1-2 GPU setups, no NVLink. A100: $15000, 80GB, 85 tok/s, enterprise features, multi-GPU scaling, ECC memory. For hobbyists/small teams: RTX 4090. For production/research: A100/H100. Cloud GPUs offer A100/H100 without upfront cost.",
+          "tags": ["gpu-comparison", "consumer", "datacenter"]
+        },
+        {
+          "id": "nvlink-importance",
+          "question": "Do I need NVLink for multi-GPU setups?",
+          "answer": "NVLink enables 600GB/s GPU-to-GPU bandwidth (vs 64GB/s PCIe). Critical for: large model training (>70B), pipeline parallelism, large batch sizes. Not critical for: data parallel training with small models, independent inference, small batch inference. If running 70B+ models across GPUs or training with large batches, NVLink is highly beneficial. Consumer GPUs (RTX 4090) lack NVLink.",
+          "tags": ["nvlink", "multi-gpu"]
+        },
+        {
+          "id": "power-supply-requirements",
+          "question": "What power supply do I need for AI workloads?",
+          "answer": "RTX 4090: 450W TDP, recommend 850W PSU (for full system). 2x RTX 4090: 1200W PSU minimum. A100: 400W, typically in server chassis. Plan for: GPU TDP + 200W system overhead + 20% safety margin. Also consider: 1) Power costs ($50-200/month for high-end), 2) Circuit breaker limits (15-20A typical), 3) Cooling (A/C costs). Cloud instances include power in hourly rate.",
+          "tags": ["power", "infrastructure"]
+        }
+      ]
+    },
+    {
+      "id": "getting-started",
+      "name": "Getting Started",
+      "icon": "rocket",
+      "description": "Questions for beginners starting with AI",
+      "questions": [
+        {
+          "id": "first-ai-project",
+          "question": "How should I start my first AI project?",
+          "answer": "1) Start with APIs (OpenAI, Anthropic) - no infrastructure needed. 2) Pick a simple use case (chatbot, document Q&A, content generation). 3) Use existing frameworks (LangChain, LlamaIndex) rather than building from scratch. 4) Start small, measure usage, then scale. 5) Track costs from day 1. Avoid: buying hardware first, jumping to self-hosting, using largest models unnecessarily. Budget $50-100/month for experimentation.",
+          "tags": ["beginner", "getting-started"]
+        },
+        {
+          "id": "learn-ai-development",
+          "question": "What should I learn to build AI applications?",
+          "answer": "Essential: 1) API integration (REST, SDK), 2) Prompt engineering, 3) Basic Python, 4) JSON/data formats. Helpful: 5) Vector databases (Pinecone, Weaviate), 6) LangChain/LlamaIndex, 7) Token optimization. Advanced: 8) Fine-tuning, 9) RAG (Retrieval Augmented Generation), 10) Model inference. Start with API docs, try examples, build a simple chatbot, then expand. Don't need ML/math to build useful applications.",
+          "tags": ["learning", "development"]
+        },
+        {
+          "id": "choose-first-model",
+          "question": "Which AI model should I use for my first project?",
+          "answer": "For most use cases, start with Claude 3.5 Sonnet: Great performance, good pricing ($3/M tokens), large context (200K), excellent at code and analysis. Alternatives: GPT-4o (better integrations), Gemini 1.5 Pro (free tier). For experimentation with zero cost: Llama 3.1 8B via Ollama (local). Don't overthink - all major models work well. Can switch later if needed.",
+          "tags": ["model-selection", "beginner"]
+        },
+        {
+          "id": "free-options",
+          "question": "Are there free options to get started?",
+          "answer": "Yes! 1) Ollama: Run Llama 3.1, Mistral, DeepSeek locally (free, needs decent laptop), 2) Google Gemini: Free tier with rate limits, 3) Claude/OpenAI: Usually offer initial credits, 4) Hugging Face: Free inference API for many models. For learning: Ollama on M1 Mac or RTX 3060+ is best. For production: Start with paid tiers for reliability. Paperspace also offers a free-tier GPU.",
+          "tags": ["free", "beginner"]
+        },
+        {
+          "id": "laptop-requirements",
+          "question": "Can I run AI models on my laptop?",
+          "answer": "Yes, with limitations. Minimum: M1 Mac (16GB) or Windows laptop with RTX 3060 (12GB VRAM). Can run: Llama 3.1 8B, Mistral 7B, Phi-3 with good performance. Cannot run: 70B+ models (need 40GB+ VRAM/RAM). M2 Max (96GB) or M3 Max (128GB) can run up to 70B models. For experimentation, most modern laptops work. For production, use cloud/dedicated hardware.",
+          "tags": ["laptop", "requirements", "hardware"]
+        }
+      ]
+    },
+    {
+      "id": "troubleshooting",
+      "name": "Troubleshooting",
+      "icon": "alert-circle",
+      "description": "Common issues and solutions",
+      "questions": [
+        {
+          "id": "out-of-memory",
+          "question": "Why am I getting Out of Memory errors?",
+          "answer": "OOM errors mean model + activations exceed VRAM. Solutions: 1) Use smaller model (70B → 8B), 2) Reduce batch size (32 → 4), 3) Use quantization (16-bit → 8-bit), 4) Enable gradient checkpointing (training), 5) Use model sharding across GPUs. For inference: 8-bit quantized Llama 3.1 8B needs ~6GB VRAM. Check actual VRAM with nvidia-smi or Activity Monitor (Mac).",
+          "tags": ["errors", "memory", "troubleshooting"]
+        },
+        {
+          "id": "slow-inference",
+          "question": "Why is inference so slow?",
+          "answer": "Common causes: 1) CPU inference instead of GPU (check device placement), 2) Large context (trim history), 3) Batch size of 1 (increase for throughput), 4) Slow storage (use SSD for model loading), 5) Network latency (API calls). For local: Ensure GPU is used, monitor with nvidia-smi. For API: Check response times, consider caching. Expect: 10-100 tokens/sec for local, 50-200 for cloud.",
+          "tags": ["performance", "troubleshooting"]
+        },
+        {
+          "id": "api-rate-limits",
+          "question": "How do I handle API rate limits?",
+          "answer": "Strategies: 1) Implement exponential backoff (retry with increasing delays), 2) Queue requests, 3) Upgrade tier (higher limits), 4) Use batch API when possible, 5) Cache responses for repeated queries, 6) Spread load across multiple keys/accounts (with provider permission). For development: Add delays between requests. For production: Implement proper queue system, monitor rate limit headers.",
+          "tags": ["api", "rate-limits"]
+        },
+        {
+          "id": "model-quality-poor",
+          "question": "Why are my model outputs poor quality?",
+          "answer": "Checklist: 1) Prompt engineering (be specific, provide examples), 2) Wrong model (use Claude/GPT-4 for complex tasks, not 7B), 3) Truncated context (check max tokens), 4) Wrong temperature (lower for factual, higher for creative), 5) Insufficient system prompt. Try: Add examples, reduce temperature to 0.1-0.3, increase max tokens, be more explicit in instructions. Compare with different models to isolate issue.",
+          "tags": ["quality", "troubleshooting"]
+        },
+        {
+          "id": "cost-unexpected",
+          "question": "Why is my bill higher than expected?",
+          "answer": "Common causes: 1) Not tracking output tokens (often 3x input), 2) Context accumulation (full history sent each request), 3) Retries/errors (still charged), 4) Wrong model (GPT-4 vs GPT-3.5), 5) Development testing on prod keys. Solutions: Set spending limits, use cost tracking tools, trim context history, use smaller models for dev, implement caching. Review usage dashboards daily when starting.",
+          "tags": ["cost", "billing"]
+        }
+      ]
+    }
+  ]
+}

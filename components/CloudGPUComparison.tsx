@@ -32,8 +32,10 @@ export default function CloudGPUComparison() {
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [selectedGPUs, setSelectedGPUs] = useState<string[]>([]);
   const [filters, setFilters] = useState({
+    minPrice: 0,
     maxPrice: 100,
     minVRAM: 0,
+    maxVRAM: 1000,
     gpuType: 'all' as 'all' | 'Entry' | 'Mid-Range' | 'Professional' | 'High-End' | 'Cutting-Edge',
     pricingModel: 'all' as 'all' | 'onDemand' | 'spot',
     showSpotPricing: true,
@@ -94,12 +96,12 @@ export default function CloudGPUComparison() {
       const price = filters.showSpotPricing && instance.spotPrice !== null
         ? instance.spotPrice
         : instance.onDemandPrice;
-      if (price > filters.maxPrice) {
+      if (price < filters.minPrice || price > filters.maxPrice) {
         return false;
       }
 
       // VRAM filter
-      if (instance.vram < filters.minVRAM) {
+      if (instance.vram < filters.minVRAM || instance.vram > filters.maxVRAM) {
         return false;
       }
 
@@ -362,6 +364,22 @@ export default function CloudGPUComparison() {
           <h2 className="text-2xl font-bold mb-4 text-blue-400">Filters</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Min Price */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Min Price: ${filters.minPrice}/hr
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="0.5"
+                value={filters.minPrice}
+                onChange={(e) => setFilters({ ...filters, minPrice: parseFloat(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+
             {/* Max Price */}
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -390,6 +408,22 @@ export default function CloudGPUComparison() {
                 step="8"
                 value={filters.minVRAM}
                 onChange={(e) => setFilters({ ...filters, minVRAM: parseInt(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+
+            {/* Max VRAM */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Max VRAM: {filters.maxVRAM >= 1000 ? 'Unlimited' : `${filters.maxVRAM} GB`}
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1000"
+                step="8"
+                value={filters.maxVRAM}
+                onChange={(e) => setFilters({ ...filters, maxVRAM: parseInt(e.target.value) })}
                 className="w-full"
               />
             </div>

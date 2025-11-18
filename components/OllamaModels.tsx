@@ -8,17 +8,28 @@ import { OllamaModelsData, CustomTooltipProps, sanitizeColor } from '@/types';
 
 const OllamaModels = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [chartView, setChartView] = useState('ram');
+  const [chartView, setChartView] = useState('memory');
   const [selectedModels, setSelectedModels] = useState<string[]>(['Llama 3.1 8B', 'Mistral 7B', 'DeepSeek-R1 70B']);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [maxRAM, setMaxRAM] = useState(200);
+  const [minRAM, setMinRAM] = useState(0);
+  const [maxRAM, setMaxRAM] = useState(256);
+  const [minParameters, setMinParameters] = useState(0);
   const [maxParameters, setMaxParameters] = useState(1000);
+  const [minVRAM, setMinVRAM] = useState(0);
+  const [maxVRAM, setMaxVRAM] = useState(400);
   const [sortBy, setSortBy] = useState<'name' | 'ram' | 'parameters' | 'storage'>('name');
 
   const models = ollamaData.models;
 
   const categories = ['all', 'General', 'Coding', 'Vision', 'Reasoning', 'Multilingual', 'Uncensored', 'Tools'];
+
+  // Helper function to parse VRAM from string
+  const parseVRAM = (vramStr: string): number => {
+    if (vramStr === 'N/A' || !vramStr) return 0;
+    const match = vramStr.match(/(\d+)GB/);
+    return match ? parseInt(match[1]) : 0;
+  };
 
   // Apply all filters
   let filteredModels = models.filter(m => {
@@ -28,11 +39,15 @@ const OllamaModels = () => {
     // Search filter
     if (searchQuery && !m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
 
-    // RAM filter
-    if (m.recommendedRAM > maxRAM) return false;
+    // RAM filters
+    if (m.recommendedRAM < minRAM || m.recommendedRAM > maxRAM) return false;
 
-    // Parameters filter
-    if (m.parameters > maxParameters) return false;
+    // Parameters filters
+    if (m.parameters < minParameters || m.parameters > maxParameters) return false;
+
+    // VRAM filters
+    const modelVRAM = parseVRAM(m.minVRAM);
+    if (modelVRAM > 0 && (modelVRAM < minVRAM || modelVRAM > maxVRAM)) return false;
 
     return true;
   });
@@ -209,26 +224,95 @@ const OllamaModels = () => {
           {showFilters && (
             <div id="ollama-advanced-filters" className="mt-6 pt-6 border-t border-slate-600">
               <h3 className="text-lg font-bold mb-4">Advanced Filters</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* RAM Filter */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* RAM Filters */}
+                <div>
+                  <label htmlFor="min-ram" className="block text-sm font-semibold mb-2">
+                    Min RAM: {minRAM === 0 ? 'Any' : `${minRAM}GB`}
+                  </label>
+                  <input
+                    id="min-ram"
+                    type="range"
+                    value={minRAM}
+                    onChange={(e) => setMinRAM(Number(e.target.value))}
+                    min="0"
+                    max="256"
+                    step="4"
+                    className="w-full"
+                    aria-label="Minimum RAM requirement"
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="max-ram" className="block text-sm font-semibold mb-2">
-                    Max RAM: {maxRAM === 200 ? 'Any' : `${maxRAM}GB`}
+                    Max RAM: {maxRAM === 256 ? 'Any' : `${maxRAM}GB`}
                   </label>
                   <input
                     id="max-ram"
                     type="range"
                     value={maxRAM}
                     onChange={(e) => setMaxRAM(Number(e.target.value))}
-                    min="4"
-                    max="200"
+                    min="0"
+                    max="256"
                     step="4"
                     className="w-full"
                     aria-label="Maximum RAM requirement"
                   />
                 </div>
 
-                {/* Parameters Filter */}
+                {/* VRAM Filters */}
+                <div>
+                  <label htmlFor="min-vram" className="block text-sm font-semibold mb-2">
+                    Min VRAM: {minVRAM === 0 ? 'Any' : `${minVRAM}GB`}
+                  </label>
+                  <input
+                    id="min-vram"
+                    type="range"
+                    value={minVRAM}
+                    onChange={(e) => setMinVRAM(Number(e.target.value))}
+                    min="0"
+                    max="400"
+                    step="8"
+                    className="w-full"
+                    aria-label="Minimum VRAM requirement"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="max-vram" className="block text-sm font-semibold mb-2">
+                    Max VRAM: {maxVRAM === 400 ? 'Any' : `${maxVRAM}GB`}
+                  </label>
+                  <input
+                    id="max-vram"
+                    type="range"
+                    value={maxVRAM}
+                    onChange={(e) => setMaxVRAM(Number(e.target.value))}
+                    min="0"
+                    max="400"
+                    step="8"
+                    className="w-full"
+                    aria-label="Maximum VRAM requirement"
+                  />
+                </div>
+
+                {/* Parameters Filters */}
+                <div>
+                  <label htmlFor="min-params" className="block text-sm font-semibold mb-2">
+                    Min Parameters: {minParameters === 0 ? 'Any' : `${minParameters}B`}
+                  </label>
+                  <input
+                    id="min-params"
+                    type="range"
+                    value={minParameters}
+                    onChange={(e) => setMinParameters(Number(e.target.value))}
+                    min="0"
+                    max="1000"
+                    step="10"
+                    className="w-full"
+                    aria-label="Minimum model parameters"
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="max-params" className="block text-sm font-semibold mb-2">
                     Max Parameters: {maxParameters === 1000 ? 'Any' : `${maxParameters}B`}
@@ -238,7 +322,7 @@ const OllamaModels = () => {
                     type="range"
                     value={maxParameters}
                     onChange={(e) => setMaxParameters(Number(e.target.value))}
-                    min="1"
+                    min="0"
                     max="1000"
                     step="10"
                     className="w-full"
@@ -251,7 +335,11 @@ const OllamaModels = () => {
               <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => {
-                    setMaxRAM(200);
+                    setMinRAM(0);
+                    setMaxRAM(256);
+                    setMinVRAM(0);
+                    setMaxVRAM(400);
+                    setMinParameters(0);
                     setMaxParameters(1000);
                     setSearchQuery('');
                     setSortBy('name');
@@ -291,15 +379,15 @@ const OllamaModels = () => {
         {/* Chart View Selector */}
         <div className="flex flex-wrap justify-center gap-3 mb-8">
           <button
-            onClick={() => setChartView('ram')}
+            onClick={() => setChartView('memory')}
             className={`px-5 py-2.5 rounded-lg font-semibold transition-all text-sm flex items-center gap-2 ${
-              chartView === 'ram'
+              chartView === 'memory'
                 ? 'bg-blue-600 text-white shadow-lg'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
           >
             <HardDrive className="w-4 h-4" />
-            RAM Requirements
+            Memory (RAM/VRAM)
           </button>
           <button
             onClick={() => setChartView('parameters')}
@@ -311,6 +399,17 @@ const OllamaModels = () => {
           >
             <Cpu className="w-4 h-4" />
             Model Size
+          </button>
+          <button
+            onClick={() => setChartView('quantization')}
+            className={`px-5 py-2.5 rounded-lg font-semibold transition-all text-sm flex items-center gap-2 ${
+              chartView === 'quantization'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+            }`}
+          >
+            <Zap className="w-4 h-4" />
+            Quantization Impact
           </button>
           <button
             onClick={() => setChartView('storage')}
@@ -358,20 +457,20 @@ const OllamaModels = () => {
 
         {/* Main Chart */}
         <div className="bg-slate-800/50 rounded-xl p-8 mb-8 backdrop-blur border border-slate-700">
-          {chartView === 'ram' && (
+          {chartView === 'memory' && (
             <div>
-              <h2 className="text-2xl font-bold mb-6 text-center">RAM Requirements Comparison</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center">Memory Requirements Comparison</h2>
               <ResponsiveContainer width="100%" height={450}>
                 <BarChart data={ramData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#94a3b8" 
-                    angle={-45} 
-                    textAnchor="end" 
+                  <XAxis
+                    dataKey="name"
+                    stroke="#94a3b8"
+                    angle={-45}
+                    textAnchor="end"
                     height={120}
                   />
-                  <YAxis stroke="#94a3b8" label={{ value: 'RAM (GB)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} />
+                  <YAxis stroke="#94a3b8" label={{ value: 'Memory (GB)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <Bar dataKey="Min RAM (GB)" fill="#3b82f6" radius={[8, 8, 0, 0]} />
@@ -379,7 +478,7 @@ const OllamaModels = () => {
                 </BarChart>
               </ResponsiveContainer>
               <p className="text-xs text-slate-400 text-center mt-4">
-                Minimum RAM may cause slow performance • Recommended RAM ensures smooth operation
+                RAM shown for CPU/unified memory inference • For GPU: Use VRAM requirements (shown in model cards) • Recommended ensures smooth operation
               </p>
             </div>
           )}
@@ -390,11 +489,11 @@ const OllamaModels = () => {
               <ResponsiveContainer width="100%" height={450}>
                 <BarChart data={parameterData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#94a3b8" 
-                    angle={-45} 
-                    textAnchor="end" 
+                  <XAxis
+                    dataKey="name"
+                    stroke="#94a3b8"
+                    angle={-45}
+                    textAnchor="end"
                     height={120}
                   />
                   <YAxis stroke="#94a3b8" label={{ value: 'Billions of Parameters', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} />
@@ -409,6 +508,91 @@ const OllamaModels = () => {
               <p className="text-xs text-slate-400 text-center mt-4">
                 Larger models generally have better capabilities but require more resources
               </p>
+            </div>
+          )}
+
+          {chartView === 'quantization' && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 text-center">Quantization Impact on Model Size</h2>
+              <div className="mb-6 p-6 bg-slate-900/50 rounded-lg border border-slate-600">
+                <h3 className="text-lg font-semibold mb-4">Understanding Quantization</h3>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-blue-400 min-w-[80px]">FP16:</span>
+                      <span className="text-slate-300">Full precision, no quality loss, largest size (2 bytes/param)</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-green-400 min-w-[80px]">Q8_0:</span>
+                      <span className="text-slate-300">8-bit, minimal loss (~1%), half FP16 size (1 byte/param)</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-yellow-400 min-w-[80px]">Q6_K:</span>
+                      <span className="text-slate-300">6-bit, small loss (~2%), 37% smaller than FP16</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-orange-400 min-w-[80px]">Q5_K_M:</span>
+                      <span className="text-slate-300">5-bit medium, moderate loss (~3-5%), 62% smaller</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-red-400 min-w-[80px]">Q4_K_M:</span>
+                      <span className="text-slate-300">4-bit medium, noticeable loss (~5-7%), 75% smaller</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-bold text-purple-400 min-w-[80px]">Q4_0:</span>
+                      <span className="text-slate-300">4-bit basic (default), acceptable for most use cases</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-center">Example: Llama 3.1 8B at Different Quantizations</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {[
+                    { quant: 'FP16', size: '16.0GB', vram: '16GB', quality: '100%', color: 'blue' },
+                    { quant: 'Q8_0', size: '8.5GB', vram: '9GB', quality: '99%', color: 'green' },
+                    { quant: 'Q6_K', size: '6.6GB', vram: '7GB', quality: '98%', color: 'yellow' },
+                    { quant: 'Q5_K_M', size: '5.7GB', vram: '6GB', quality: '96%', color: 'orange' },
+                    { quant: 'Q4_K_M', size: '4.9GB', vram: '5GB', quality: '94%', color: 'red' },
+                    { quant: 'Q4_0 ✓', size: '4.7GB', vram: '5GB', quality: '93%', color: 'purple' },
+                  ].map((item) => (
+                    <div key={item.quant} className={`p-4 rounded-lg bg-${item.color}-900/20 border border-${item.color}-500/30`}>
+                      <h4 className={`font-bold text-${item.color}-400 mb-2`}>{item.quant}</h4>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Storage:</span>
+                          <span className="font-semibold">{item.size}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">VRAM:</span>
+                          <span className="font-semibold">{item.vram}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Quality:</span>
+                          <span className="font-semibold">{item.quality}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                  <h4 className="font-semibold mb-2 text-blue-300">Recommendations:</h4>
+                  <ul className="text-sm space-y-2 text-slate-300">
+                    <li><strong>Q4_0 (Default):</strong> Best balance for most users - 75% smaller, good quality</li>
+                    <li><strong>Q5_K_M or Q6_K:</strong> If you have extra VRAM and want better quality</li>
+                    <li><strong>Q8_0 or FP16:</strong> For research or when quality is critical (requires 2x VRAM)</li>
+                    <li><strong>Lower quantization:</strong> Use Q4_0 or Q4_K_M when VRAM is limited</li>
+                  </ul>
+                </div>
+
+                <div className="text-xs text-slate-400 text-center mt-4">
+                  Most Ollama models default to Q4_0 quantization • You can download other quantizations using tags (e.g., llama3.1:8b-q8_0)
+                </div>
+              </div>
             </div>
           )}
 
