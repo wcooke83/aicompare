@@ -23,11 +23,12 @@ import {
 } from 'recharts';
 import { CloudGPUData, CloudGPUInstance, CloudGPUProvider, CustomTooltipProps } from '@/types';
 import cloudGPUData from '@/data/cloudGPUs.json';
+import { Download } from 'lucide-react';
 
 export default function CloudGPUComparison() {
   const data = cloudGPUData as CloudGPUData;
 
-  const [chartView, setChartView] = useState<'price' | 'performance' | 'value' | 'specs' | 'providers'>('price');
+  const [chartView, setChartView] = useState<'price' | 'performance' | 'value' | 'bestvalue' | 'specs' | 'providers'>('price');
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [selectedGPUs, setSelectedGPUs] = useState<string[]>([]);
   const [filters, setFilters] = useState({
@@ -37,7 +38,8 @@ export default function CloudGPUComparison() {
     pricingModel: 'all' as 'all' | 'onDemand' | 'spot',
     showSpotPricing: true,
   });
-  const [sortBy, setSortBy] = useState<'price' | 'performance' | 'vram' | 'name'>('price');
+  const [sortBy, setSortBy] = useState<'price' | 'performance' | 'vram' | 'name' | 'value'>('price');
+  const [compareInstances, setCompareInstances] = useState<string[]>([]);
 
   // Get all instances from all providers
   const allInstances: (CloudGPUInstance & { providerName: string; providerColor: string })[] = useMemo(() => {
@@ -63,6 +65,16 @@ export default function CloudGPUComparison() {
       }
     }
     return 'Mid-Range';
+  };
+
+  // Calculate value score (performance per dollar per hour)
+  const calculateValueScore = (instance: CloudGPUInstance): number => {
+    const price = filters.showSpotPricing && instance.spotPrice !== null
+      ? instance.spotPrice
+      : instance.onDemandPrice;
+    if (price === 0) return 0;
+    // Value = performance score / hourly price * 10 (scaled for readability)
+    return (instance.performanceScore / price) * 10;
   };
 
   // Filter instances
@@ -121,6 +133,8 @@ export default function CloudGPUComparison() {
           return b.performanceScore - a.performanceScore;
         case 'vram':
           return b.vram - a.vram;
+        case 'value':
+          return calculateValueScore(b) - calculateValueScore(a);
         case 'name':
           return a.name.localeCompare(b.name);
         default:
@@ -218,6 +232,84 @@ export default function CloudGPUComparison() {
     setSelectedGPUs((prev) =>
       prev.includes(gpu) ? prev.filter((g) => g !== gpu) : [...prev, gpu]
     );
+  };
+
+  // Best Value data
+  const bestValueData = useMemo(() => {
+    return sortedInstances.slice(0, 15).map((instance) => ({
+      name: `${instance.providerName} ${instance.name}`,
+      'Value Score': parseFloat(calculateValueScore(instance).toFixed(1)),
+      color: instance.providerColor,
+      fullData: instance,
+    }));
+  }, [sortedInstances, filters.showSpotPricing]);
+
+  const toggleCompare = (instanceName: string) => {
+    setCompareInstances((prev) => {
+      if (prev.includes(instanceName)) {
+        return prev.filter((n) => n !== instanceName);
+      } else if (prev.length < 4) {
+        return [...prev, instanceName];
+      }
+      return prev;
+    });
+  };
+
+  const exportToCSV = () => {
+    const headers = [
+      'Provider',
+      'Instance',
+      'GPU',
+      'GPU Count',
+      'VRAM (GB)',
+      'RAM (GB)',
+      'vCPUs',
+      'Storage',
+      'On-Demand ($/hr)',
+      'Spot ($/hr)',
+      'Performance Score',
+      'Value Score',
+      'Regions',
+      'Best For'
+    ];
+
+    const rows = sortedInstances.map((instance) => [
+      instance.providerName,
+      instance.name,
+      instance.gpu,
+      instance.gpuCount,
+      instance.vram,
+      instance.ram,
+      instance.vcpus,
+      instance.storage,
+      instance.onDemandPrice,
+      instance.spotPrice || 'N/A',
+      instance.performanceScore,
+      calculateValueScore(instance).toFixed(1),
+      instance.regions,
+      instance.bestFor.join('; ')
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) =>
+        row.map((cell) =>
+          typeof cell === 'string' && cell.includes(',')
+            ? `"${cell}"`
+            : cell
+        ).join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `cloud-gpu-comparison-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
@@ -343,6 +435,7 @@ export default function CloudGPUComparison() {
               >
                 <option value="price">Price (Low to High)</option>
                 <option value="performance">Performance (High to Low)</option>
+                <option value="value">Best Value (High to Low)</option>
                 <option value="vram">VRAM (High to Low)</option>
                 <option value="name">Name (A-Z)</option>
               </select>
@@ -430,6 +523,7 @@ export default function CloudGPUComparison() {
           {[
             { value: 'price', label: 'Price Comparison' },
             { value: 'performance', label: 'Performance' },
+            { value: 'bestvalue', label: 'Best Value' },
             { value: 'value', label: 'Price vs Performance' },
             { value: 'specs', label: 'Specifications' },
             { value: 'providers', label: 'Provider Overview' },
@@ -448,9 +542,18 @@ export default function CloudGPUComparison() {
           ))}
         </div>
 
-        {/* Results Count */}
-        <div className="mb-4 text-slate-300">
-          Showing {sortedInstances.length} of {allInstances.length} instances
+        {/* Results Count & Export */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-slate-300">
+            Showing {sortedInstances.length} of {allInstances.length} instances
+          </div>
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all"
+          >
+            <Download className="w-4 h-4" />
+            Export to CSV
+          </button>
         </div>
 
         {/* Charts */}
@@ -483,6 +586,28 @@ export default function CloudGPUComparison() {
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="Performance">
                     {performanceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {chartView === 'bestvalue' && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 text-emerald-400">Best Value GPUs (Top 15)</h2>
+              <p className="text-slate-300 mb-4">
+                Value Score = Performance Score ÷ Price per Hour × 10 (higher is better)
+              </p>
+              <ResponsiveContainer width="100%" height={500}>
+                <BarChart data={bestValueData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis type="number" stroke="#9ca3af" label={{ value: 'Value Score', position: 'bottom' }} />
+                  <YAxis dataKey="name" type="category" stroke="#9ca3af" width={200} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="Value Score" radius={[0, 8, 8, 0]}>
+                    {bestValueData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Bar>
@@ -573,12 +698,116 @@ export default function CloudGPUComparison() {
           )}
         </div>
 
+        {/* Side-by-Side Comparison */}
+        {compareInstances.length > 0 && (
+          <div className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 backdrop-blur rounded-xl p-8 mb-8 border border-blue-700">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-blue-400">
+                Side-by-Side Comparison ({compareInstances.length}/4)
+              </h2>
+              <button
+                onClick={() => setCompareInstances([])}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all"
+              >
+                Clear Comparison
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {compareInstances.map((instanceKey) => {
+                const instance = allInstances.find(
+                  (i) => `${i.providerName}-${i.name}` === instanceKey
+                );
+                if (!instance) return null;
+
+                const valueScore = calculateValueScore(instance);
+
+                return (
+                  <div
+                    key={instanceKey}
+                    className="bg-slate-800 rounded-lg p-4 border border-slate-600"
+                    style={{ borderColor: instance.providerColor }}
+                  >
+                    <div
+                      className="px-3 py-1 rounded mb-3 text-sm font-bold text-center"
+                      style={{ backgroundColor: instance.providerColor }}
+                    >
+                      {instance.providerName}
+                    </div>
+                    <h3 className="font-bold text-lg mb-4 text-white">{instance.name}</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">GPU:</span>
+                        <span className="text-white font-semibold">
+                          {instance.gpuCount}x {instance.gpu}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">VRAM:</span>
+                        <span className="text-white">{instance.vram} GB</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">RAM:</span>
+                        <span className="text-white">{instance.ram} GB</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">vCPUs:</span>
+                        <span className="text-white">{instance.vcpus}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Storage:</span>
+                        <span className="text-white">{instance.storage}</span>
+                      </div>
+                      <div className="border-t border-slate-600 pt-2 mt-2">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">On-Demand:</span>
+                          <span className="text-yellow-400 font-bold">
+                            ${instance.onDemandPrice.toFixed(2)}/hr
+                          </span>
+                        </div>
+                        {instance.spotPrice && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Spot:</span>
+                            <span className="text-green-400 font-bold">
+                              ${instance.spotPrice.toFixed(2)}/hr
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="border-t border-slate-600 pt-2 mt-2">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Performance:</span>
+                          <span className="text-blue-400 font-bold">{instance.performanceScore}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Value Score:</span>
+                          <span className="text-emerald-400 font-bold">{valueScore.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-600 pt-2 mt-2">
+                        <div className="text-slate-400 text-xs mb-1">Best For:</div>
+                        <div className="text-white text-xs">{instance.bestFor.join(', ')}</div>
+                      </div>
+                      <div className="border-t border-slate-600 pt-2 mt-2">
+                        <div className="text-slate-400 text-xs">Regions: {instance.regions}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Comparison Table */}
         <div className="bg-slate-800/50 backdrop-blur rounded-xl p-8 border border-slate-700 overflow-x-auto">
           <h2 className="text-2xl font-bold mb-6 text-blue-400">Detailed Comparison</h2>
+          <p className="text-slate-300 mb-4 text-sm">
+            Select up to 4 instances to compare side-by-side
+          </p>
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-slate-700">
+                <th className="pb-3 pr-4">Compare</th>
                 <th className="pb-3 pr-4">Provider</th>
                 <th className="pb-3 pr-4">Instance</th>
                 <th className="pb-3 pr-4">GPU</th>
@@ -587,13 +816,27 @@ export default function CloudGPUComparison() {
                 <th className="pb-3 pr-4">vCPUs</th>
                 <th className="pb-3 pr-4">On-Demand</th>
                 <th className="pb-3 pr-4">Spot</th>
-                <th className="pb-3 pr-4">Perf Score</th>
+                <th className="pb-3 pr-4">Perf</th>
+                <th className="pb-3 pr-4">Value</th>
                 <th className="pb-3">Best For</th>
               </tr>
             </thead>
             <tbody>
-              {sortedInstances.map((instance, index) => (
+              {sortedInstances.map((instance, index) => {
+                const instanceKey = `${instance.providerName}-${instance.name}`;
+                const isSelected = compareInstances.includes(instanceKey);
+
+                return (
                 <tr key={index} className="border-b border-slate-700/50 hover:bg-slate-700/30">
+                  <td className="py-3 pr-4">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleCompare(instanceKey)}
+                      disabled={!isSelected && compareInstances.length >= 4}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+                  </td>
                   <td className="py-3 pr-4">
                     <span
                       className="px-2 py-1 rounded text-sm font-medium"
@@ -624,9 +867,15 @@ export default function CloudGPUComparison() {
                       <span className="text-sm">{instance.performanceScore}</span>
                     </div>
                   </td>
+                  <td className="py-3 pr-4">
+                    <span className="text-emerald-400 font-semibold">
+                      {calculateValueScore(instance).toFixed(1)}
+                    </span>
+                  </td>
                   <td className="py-3 text-sm text-slate-400">{instance.bestFor.join(', ')}</td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>
@@ -643,6 +892,76 @@ export default function CloudGPUComparison() {
                 <p className="text-sm text-slate-400">{tier.bestFor}</p>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Model Compatibility Guide */}
+        <div className="mt-8 bg-slate-800/50 backdrop-blur rounded-xl p-8 border border-slate-700">
+          <h2 className="text-2xl font-bold mb-6 text-cyan-400">Model Compatibility Guide</h2>
+          <p className="text-slate-300 mb-6">
+            Approximate VRAM requirements for popular open-source models. Actual requirements vary based on quantization and context length.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-slate-700/50 p-4 rounded-lg">
+              <h3 className="text-lg font-bold text-green-400 mb-3">Small Models (8-14B)</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-300">Llama 3.1 8B, Mistral 7B</span>
+                  <span className="text-blue-400 font-semibold">16-24 GB VRAM</span>
+                </div>
+                <div className="text-slate-400 text-xs mt-2">
+                  Compatible: T4, A10, RTX 3090, RTX 4090, and higher
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-700/50 p-4 rounded-lg">
+              <h3 className="text-lg font-bold text-yellow-400 mb-3">Medium Models (30-70B)</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-300">Llama 3.1 70B, Mixtral 8x7B</span>
+                  <span className="text-blue-400 font-semibold">40-80 GB VRAM</span>
+                </div>
+                <div className="text-slate-400 text-xs mt-2">
+                  Compatible: A40, A100 (40GB/80GB), H100, 2x RTX 4090
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-700/50 p-4 rounded-lg">
+              <h3 className="text-lg font-bold text-orange-400 mb-3">Large Models (405B+)</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-300">Llama 3.1 405B</span>
+                  <span className="text-blue-400 font-semibold">200+ GB VRAM</span>
+                </div>
+                <div className="text-slate-400 text-xs mt-2">
+                  Compatible: Multiple A100 80GB, Multiple H100, Apple M2 Ultra (Unified Memory)
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-700/50 p-4 rounded-lg">
+              <h3 className="text-lg font-bold text-red-400 mb-3">DeepSeek-R1 (671B)</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-300">DeepSeek-R1 671B</span>
+                  <span className="text-blue-400 font-semibold">320+ GB VRAM</span>
+                </div>
+                <div className="text-slate-400 text-xs mt-2">
+                  Compatible: 8x A100 (80GB), 8x H100, or specialized multi-GPU setups
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+            <p className="text-sm text-slate-300">
+              <strong className="text-cyan-400">Tip:</strong> For detailed model comparisons and hardware requirements, visit the{' '}
+              <a href="/ai-models" className="text-cyan-400 hover:text-cyan-300 underline">
+                AI Models Comparison
+              </a>
+              {' '}page.
+            </p>
           </div>
         </div>
 
